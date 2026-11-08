@@ -1,0 +1,9 @@
+{
+  "name": "mubashir-portfolio",
+  "private": true,
+  "scripts": {
+    "dev": "python3 -m http.server 8080",
+    "stage": "mkdir -p public && cp index.html public/",
+    "deploy:cf": "npm run stage && npx wrangler deploy"
+  }
+}

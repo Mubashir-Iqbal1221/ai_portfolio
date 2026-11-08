@@ -1,0 +1,27 @@
+<!-- @dsCard group="Content" height=520 subtitle="Project row at rest and in its hover state" -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>ProjectRow preview</title><style>.project-title{font-size:34px}@media(max-width:700px){.pf-row{grid-template-columns:1fr}}</style></head>
+<body>
+<div class="pf-frame" style="display:grid;gap:0">
+  <article class="pf-row" style="border-bottom:0">
+    <div class="pf-num">01</div>
+    <div>
+      <h3 class="project-title">Beyond ONE</h3>
+      <p class="pf-lede body">A news intelligence system that ingests articles, generates alerts and validates them, with every alert traceable to its source.</p>
+      <ul class="pf-points body-small"><li>Pub/Sub ingestion for providers that poll on different schedules.</li><li>Bitemporal modeling keeps past alert decisions reproducible.</li></ul>
+    </div>
+    <div class="pf-tags"><span class="pf-tag tag">Python</span><span class="pf-tag tag">GCP Pub/Sub</span><span class="pf-tag tag">Graphiti</span></div>
+  </article>
+  <article class="pf-row is-hover">
+    <div class="pf-num">02</div>
+    <div>
+      <h3 class="project-title">VISTOS</h3>
+      <p class="pf-lede body">Detection on a Jetson Nano, with an agent that answers questions about what the cameras saw.</p>
+      <ul class="pf-points body-small"><li>YOLO detection through DeepStream pipelines.</li></ul>
+    </div>
+    <div class="pf-tags"><span class="pf-tag tag">Jetson Nano</span><span class="pf-tag tag">YOLO</span></div>
+  </article>
+</div>
+</body>
+</html>
