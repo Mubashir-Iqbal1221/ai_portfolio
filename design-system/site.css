@@ -54,6 +54,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .pill{position:fixed;top:var(--s5);left:50%;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:var(--s1);padding:6px;max-width:calc(100% - var(--s4));background:var(--glass);border:1px solid var(--line);border-radius:var(--radius-pill);box-shadow:0 8px 30px rgba(0,0,0,.18)}
 .brand{display:inline-flex;align-items:center;gap:var(--s2);min-height:44px;padding:0 var(--s4) 0 var(--s3);margin-right:var(--s1);border-right:1px solid var(--line);font-size:var(--step-0);font-weight:600;letter-spacing:-.01em;white-space:nowrap}
 .brand i{width:8px;height:8px;border-radius:50%;background:var(--accent-fill);flex:none}
+.site-name{display:none}
+@media (min-width:1100px){
+  .site-name{position:absolute;z-index:40;top:var(--s5);left:36px;display:inline-flex;align-items:center;gap:var(--s2);height:56px;font-size:30px;font-weight:700;letter-spacing:-.025em;color:var(--strong);white-space:nowrap}
+  .site-name i{width:10px;height:10px;border-radius:50%;background:var(--accent-fill);flex:none}
+  .pill .brand{display:none}
+}
 .links{display:flex;gap:var(--s1)}
 .links a{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 var(--s4);font-size:var(--step-0);font-weight:500;color:var(--muted);border-radius:var(--radius-pill);transition:color .3s,background .3s}
 .links a:hover{color:var(--strong);background:var(--accent-soft)}
