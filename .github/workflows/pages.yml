@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Stage site
-        run: mkdir _site && cp index.html _site/
+        run: mkdir -p _site/design-system && cp index.html _site/ && cp -r case writing _site/ && cp design-system/site.css _site/design-system/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

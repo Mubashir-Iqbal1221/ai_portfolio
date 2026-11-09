@@ -17,16 +17,14 @@ Scroll drives a camera orbit around a procedural knowledge-graph scene. Dark is 
 
     index.html            the site (HTML, CSS, JS, shader in one file)
     design-system/        tokens.json (source), tokens.css, components/ with previews
-    docs/brand-book.md    voice, color, type, layout, motion, states
-    docs/scene.md         3D scene constants and theme parity
-    docs/adding.md        checklist for adding sections or components
+    docs/baseline/        brand, UI and content standards, site copy, roadmap
 
 ## Working rules
 
 1. Change `design-system/tokens.json` first, then mirror the value in the `:root` and `html[data-mode="light"]` blocks of `index.html`.
-2. Every color must be checked in both themes (text 4.5:1, controls 3:1). See `docs/brand-book.md`.
+2. Every color must be checked in both themes (text 4.5:1, controls 3:1). See `docs/baseline/ui_baseline.md`.
 3. Respect `prefers-reduced-motion`; reveal animations start from a visible state.
-4. Follow `docs/adding.md` for any new section.
+4. Follow `docs/baseline/ui_baseline.md` for any new section.
 
 ## Known gaps
 

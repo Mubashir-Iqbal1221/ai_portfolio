@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VISTOS: event detection on camera streams on NVIDIA Jetson | Mubashir Iqbal</title>
+<meta name="description" content="How a camera safety-monitoring pipeline was benchmarked on NVIDIA Jetson: 4 streams at 2 fps and 8 streams at 1 fps run stable at a 0.889 throughput ratio.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VISTOS: event detection on camera streams on NVIDIA Jetson | Mubashir Iqbal">
+<meta property="og:description" content="How a camera safety-monitoring pipeline was benchmarked on NVIDIA Jetson: 4 streams at 2 fps and 8 streams at 1 fps run stable at a 0.889 throughput ratio.">
+<script>try{var m=localStorage.getItem("mode");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-mode",m)}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2305070b'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23e8a24a' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../design-system/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="pill">
+  <a class="brand" href="../index.html" aria-label="Mubashir Iqbal"><i></i><span>Mubashir Iqbal</span></a>
+  <nav class="links" aria-label="Primary"><a href="../#work" data-nav="work">Work</a><a href="../#stack" data-nav="stack">Stack</a><a href="../#about" data-nav="about">About</a><a href="../#contact" data-nav="contact">Contact</a></nav>
+  <span class="sep nav-sep"></span>
+  
+  <button class="icon-btn" id="theme" type="button" aria-pressed="false" aria-label="Switch to light mode" title="Switch theme"><svg class="ico sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7L7 17M17 7l1.7-1.7"/></svg><svg class="ico moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg></button>
+  <a class="pill-cta" href="mailto:mubashiriqbal1221@gmail.com">Email me</a>
+</header>
+<main id="main" class="prose-wrap">
+  <p class="post-meta">Case study · 2026</p>
+  <h1>VISTOS: finding events on camera streams, on one Jetson</h1>
+  <p>VISTOS spots falls and fights on camera streams and runs on an NVIDIA Jetson. I worked on the Jetson and DeepStream pipeline and trained its vision model.</p>
+
+  <h2>What it does</h2>
+  <ul>
+    <li>Filters early: frames with no people are skipped before the costly steps.</li>
+    <li>Flags falls and fights from body overlap and pose-landmark movement.</li>
+    <li>An event engine removes repeats and saves clips for operators.</li>
+  </ul>
+  <figure class="p-fig">
+    <ol class="flow"><li>Camera streams</li><li>Pre-filter (tamper, YOLO pose, tracking)</li><li>Event engine</li><li>Clips and dashboard</li></ol>
+  </figure>
+
+  <h2>How it ran</h2>
+  <div class="bars" role="group" aria-label="Throughput ratio by streams and frames per second">
+    <div class="bar limited"><span>1 stream, 8 fps</span><i style="width:36%"></i><span>0.361, limited</span></div>
+    <div class="bar limited"><span>2 streams, 6 fps</span><i style="width:47%"></i><span>0.470, limited</span></div>
+    <div class="bar limited"><span>3 streams, 4 fps</span><i style="width:65%"></i><span>0.650, limited</span></div>
+    <div class="bar"><span>4 streams, 2 fps</span><i style="width:89%"></i><span>0.889, stable</span></div>
+    <div class="bar"><span>8 streams, 1 fps</span><i style="width:89%"></i><span>0.889, stable</span></div>
+  </div>
+  <p>Benchmark on the repository's runner: 20 s warm-up, 45 s measured, 2 repeats.</p>
+
+  <h2>Worth flagging</h2>
+  <ul>
+    <li>This measures throughput only. How often events are detected correctly is not reported here.</li>
+    <li>Stable runs top out at 0.889, so "stable" is the pass mark, not a ratio of 1.0.</li>
+  </ul>
+
+  <p class="post-meta">Code is private. Email me for a walkthrough: <a href="mailto:mubashiriqbal1221@gmail.com">mubashiriqbal1221@gmail.com</a>. <a href="../index.html#work">Back to all work</a></p>
+</main>
+<script>
+(function(){var b=document.getElementById('theme'),h=document.documentElement;function s(){var l=h.getAttribute('data-mode')==='light';b.setAttribute('aria-pressed',l?'true':'false');b.setAttribute('aria-label',l?'Switch to dark mode':'Switch to light mode')}s();b.addEventListener('click',function(){var l=h.getAttribute('data-mode')!=='light';h.setAttribute('data-mode',l?'light':'dark');try{localStorage.setItem('mode',l?'light':'dark')}catch(e){}s()})})();
+</script>
+</body>
+</html>
