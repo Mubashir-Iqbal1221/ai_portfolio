@@ -1,9 +1,19 @@
 {
   "name": "mubashir-portfolio",
   "private": true,
+  "version": "1.0.0",
+  "description": "Static portfolio site built with Vite. Plain HTML and CSS, no framework.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "dev": "python3 -m http.server 8080",
-    "stage": "mkdir -p public/design-system && cp index.html public/ && cp -r case writing public/ && cp design-system/site.css public/design-system/",
-    "deploy:cf": "npm run stage && npx wrangler deploy"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy:cf": "npm run build && npx wrangler deploy"
+  },
+  "devDependencies": {
+    "vite": "^8.3.7"
   }
 }

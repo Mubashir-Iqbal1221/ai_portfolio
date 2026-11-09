@@ -1,33 +1,43 @@
-# Mubashir Portfolio
+# Mubashir Iqbal, portfolio
 
-Single-file portfolio: one `index.html`, Three.js r128 from cdnjs, no build step.
-Scroll drives a camera orbit around a procedural knowledge-graph scene. Dark is the default theme, with a light toggle saved in `localStorage.mode`.
+A static site: plain HTML, CSS and a little JavaScript, built with [Vite](https://vite.dev). No framework.
 
-## Run locally
+## Run it
 
-    npm run dev        # or: python3 -m http.server 8080
-    open http://localhost:8080
+Needs Node 20 or newer (`.nvmrc` says 22).
 
-## Deploy (free)
-
-- **GitHub Pages:** push to `main`. Enable Pages with source "GitHub Actions" in repo settings. Workflow: `.github/workflows/pages.yml`.
-- **Cloudflare:** `npm run deploy:cf` (Workers static assets, config in `wrangler.jsonc`), or connect the repo to Cloudflare Pages with no build command and output directory `/`.
+    npm install        # once
+    npm run dev        # http://localhost:8080, reloads on every save
+    npm run build      # production build into dist/
+    npm run preview    # serve the production build locally
 
 ## Layout
 
-    index.html            the site (HTML, CSS, JS, shader in one file)
-    design-system/        tokens.json (source), tokens.css, components/ with previews
-    docs/baseline/        brand, UI and content standards, site copy, roadmap
+    index.html               home page: hero, work, stack, about, contact
+    case/                    case study pages (every .html here is built automatically)
+    writing/                 blog post template and posts (same rule)
+    design-system/site.css   the single stylesheet
+    public/                  files copied as they are (images, og image, favicon)
+    vite.config.js           page list and build settings
+    docs/baseline/           brand, UI and content standards, site copy, roadmap (local only, gitignored)
+
+To add a case study or a blog post, copy an existing .html file into `case/` or `writing/`. No config change is needed.
+
+## Deploy
+
+- **GitHub Pages:** push to `main`. In the repo settings set Pages source to "GitHub Actions". The workflow `.github/workflows/pages.yml` runs `npm ci` and `npm run build`, then publishes `dist/`.
+- **Cloudflare:** `npm run deploy:cf` builds and runs `wrangler deploy` (config in `wrangler.jsonc`, serves `dist/`).
 
 ## Working rules
 
-1. Change `design-system/tokens.json` first, then mirror the value in the `:root` and `html[data-mode="light"]` blocks of `index.html`.
-2. Every color must be checked in both themes (text 4.5:1, controls 3:1). See `docs/baseline/ui_baseline.md`.
-3. Respect `prefers-reduced-motion`; reveal animations start from a visible state.
-4. Follow `docs/baseline/ui_baseline.md` for any new section.
+1. Site copy lives in `docs/baseline/site_content.md`. Keep it in step with `index.html`.
+2. Read `docs/baseline/brand_guideline.md` before changing copy, and `docs/baseline/ui_baseline.md` before changing layout, colour or motion.
+3. Every colour must pass contrast in dark and light mode (text 4.5:1, controls 3:1).
+4. Respect `prefers-reduced-motion`, and keep the pause control for any looping motion.
+5. No horizontal overflow from 320 px to 1440 px.
 
 ## Known gaps
 
-- Contact links in `index.html` are placeholders.
-- The `navy` token is defined but unused.
-- The 3D scene and light-mode hero were not verified visually in headless tests (no WebGL). Check them in a real browser.
+- The LinkedIn address has not been click-tested.
+- There is no `og:image` yet, so shared links show no preview picture.
+- Light mode has been checked less than dark mode.
