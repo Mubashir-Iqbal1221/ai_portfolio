@@ -137,6 +137,9 @@ html[data-mode="light"] .stat b span{color:var(--accent)}
 .about-card{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:var(--s7);padding:var(--s6)}
 .about-card h2{font-size:var(--step-4);line-height:1.1;margin-bottom:var(--s4)}
 .about-card p{color:var(--muted);margin-bottom:var(--s3);max-width:58ch}
+.about-card p a{color:var(--accent);font-weight:500;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.about-card p a::after{content:"\2197";display:inline-block;margin-left:.2em;font-size:.85em;text-decoration:none}
+.about-card p a:hover{text-decoration-thickness:2px}
 .about-card p.aside{font-size:var(--step-1);margin-bottom:0}
 .facts{display:grid;align-content:start;list-style:none}
 .facts li{display:grid;grid-template-columns:6.5rem minmax(0,1fr);gap:var(--s4);padding:var(--s3) 0;border-bottom:1px solid var(--line);font-size:var(--step-1)}
