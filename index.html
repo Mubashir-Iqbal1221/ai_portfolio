@@ -43,7 +43,7 @@
         <a class="btn ghost" href="#work">See the work <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       </div>
     </div>
-    <div class="hero-graph" id="hero-graph" role="img" aria-label="Illustration of an agent architecture: a user request goes to an agent, which picks one MCP tool (shared drive or OneDrive), passes the result to a fact-checker with a traffic-light verdict, and returns an answer." data-clusters='[&quot;Beyond ONE&quot;, &quot;VISTOS&quot;, &quot;Eyewear recommendation&quot;, &quot;Agent platform with MCP&quot;, &quot;Blog Writing Agent&quot;]'><canvas id="webgl" aria-hidden="true"></canvas><span class="graph-cap" aria-hidden="true">agent_graph(illustration)</span></div>
+    <div class="hero-graph" id="hero-graph" role="img" aria-label="Illustration of how I start work: a vague problem becomes a clear goal by asking questions. Then comes a triangle of cost, speed and accuracy, where we agree the balance, and a choice of the simplest approach that works: a language model, an agent, or computer vision." data-clusters='[&quot;Beyond ONE&quot;, &quot;VISTOS&quot;, &quot;Eyewear recommendation&quot;, &quot;Agent platform with MCP&quot;, &quot;Blog Writing Agent&quot;]'><canvas id="webgl" aria-hidden="true"></canvas><span class="graph-cap" aria-hidden="true">clarify(illustration)</span></div>
     <!-- STATS: provisional values from docs/baseline/site_content.md (proof_strip); the owner will review the numbers later -->
     <div class="stats">
       <div class="stat"><b>F1 0.88</b><p>Relevancy gate, 132 labelled events, half synthetic</p></div>
@@ -221,70 +221,118 @@
   }
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
-  /* ---- hero visual: an agent architecture, drawn in 2D. An illustration of the pattern, not a live system. ---- */
+  /* ---- hero visual: from a problem to a goal by asking questions, then the trade-offs and the approach.
+     An illustration of how I start work, not a live system. Drawn on a 400 x 440 board, scaled to fit.
+     Rules used: one radius (12), two line weights (1.25 and 2), three text styles (label, main line, caption),
+     24 unit gaps with a wider gap only where the questions travel, all text at least 4.5:1 in both modes. ---- */
   var host = $('hero-graph'), cv = $('webgl');
   var ctx = cv.getContext ? cv.getContext('2d') : null;
   if (!ctx) { html.classList.add('no-gl'); return; }
-  var cloud = hero;
-  var NODES = [
-    { id: 'req', t: 'User request', x: 0.5, y: 0.07 },
-    { id: 'agent', t: 'Agent', x: 0.5, y: 0.26 },
-    { id: 't1', t: 'Shared drive (MCP)', x: 0.27, y: 0.5 },
-    { id: 't2', t: 'OneDrive (MCP)', x: 0.73, y: 0.5 },
-    { id: 'chk', t: 'Fact-checker', x: 0.38, y: 0.72 },
-    { id: 'ans', t: 'Answer', x: 0.38, y: 0.9 }
-  ];
-  var EDGES = [['req', 'agent'], ['agent', 't1'], ['agent', 't2'], ['t1', 'chk'], ['t2', 'chk'], ['chk', 'ans']];
-  var W = 0, H = 0, dpr = 1, t0 = performance.now(), visible = true, pos = {};
-  var VERDICT = [['#22c55e', 'green'], ['#f59e0b', 'amber'], ['#ef4444', 'red']];
+  var W = 0, H = 0, dpr = 1, sc = 1, ox = 0, oy = 0, t0 = performance.now(), visible = true;
+  var BW = 400, BH = 440, CYCLE = 15, START = 1.0, EX = 1.2, R = 12, LW = 1.25, LWH = 2;
+  var QS = ['who is it for?', 'what is good enough?', 'what can we trade?'];
+  var STAGES = ['the problem', 'asking the client', 'the plan'];
+  var CHIPS = ['LLM', 'agent', 'vision'];
+  var PY = 66, GY = 174, TY = 270, AY = 366;    /* card centres: problem, goal, trade-offs, approach */
+  var PH = 60, GH = 60, TH = 84, AH = 60;       /* card heights */
   function layout() {
     W = host.clientWidth; H = host.clientHeight; dpr = Math.min(devicePixelRatio || 1, 2);
-    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.font = '500 12px "JetBrains Mono", ui-monospace, monospace';
-    NODES.forEach(function (n) { var w = ctx.measureText(n.t).width + 24; pos[n.id] = { x: n.x * W, y: n.y * H, w: w, h: 30 }; });
+    cv.width = W * dpr; cv.height = H * dpr;
+    sc = Math.min(W / BW, H / BH); ox = (W - BW * sc) / 2; oy = (H - BH * sc) / 2;
     hero.dirty = true;
   }
-  function pal() { var l = html.getAttribute('data-mode') === 'light'; return l ? { fg: '23,23,23', ac: '67,56,202', line: '115,115,115', card: '255,255,255' } : { fg: '234,234,234', ac: '129,140,248', line: '115,115,115', card: '15,17,18' }; }
-  /* orthogonal route from the bottom of a to the top of b: down, across, down */
-  function route(a, b) {
-    var x1 = a.x, y1 = a.y + a.h / 2, x2 = b.x, y2 = b.y - b.h / 2, my = (y1 + y2) / 2;
-    return x1 === x2 ? [[x1, y1], [x2, y2]] : [[x1, y1], [x1, my], [x2, my], [x2, y2]];
+  function pal() { var l = html.getAttribute('data-mode') === 'light'; return l ? { fg: '23,23,23', ac: '67,56,202', line: '115,115,115', card: '255,255,255', ok: '15,118,110' } : { fg: '234,234,234', ac: '129,140,248', line: '115,115,115', card: '15,17,18', ok: '94,234,212' }; }
+  function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function ease(v) { v = clamp(v); return v * v * (3 - 2 * v); }
+  function rr(x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function label(text, x, y, col) { ctx.font = '500 13px "JetBrains Mono", ui-monospace, monospace'; ctx.textAlign = 'left'; ctx.fillStyle = col; ctx.fillText(text, x, y); }
+  function main(text, x, y, col) { ctx.font = '600 16px Inter, system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = col; ctx.fillText(text, x, y); }
+  function cap(text, x, y, col, align) { ctx.font = '500 13px Inter, system-ui, sans-serif'; ctx.textAlign = align || 'left'; ctx.fillStyle = col; ctx.fillText(text, x, y); }
+  function card(y, h, border, a, dash) {
+    ctx.globalAlpha = a; ctx.fillStyle = 'rgba(' + pal().card + ',0.96)'; ctx.strokeStyle = border; ctx.lineWidth = LW;
+    rr(24, y - h / 2, BW - 48, h, R); ctx.fill(); if (dash) ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
   }
-  function len(pts) { var L = 0; for (var i = 1; i < pts.length; i++) L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return L; }
-  function at(pts, f) { var L = len(pts) * f, i = 1; for (; i < pts.length; i++) { var d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); if (L <= d) { var k = d ? L / d : 0; return [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * k, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * k]; } L -= d; } return pts[pts.length - 1]; }
+  function check(x, y, c) { ctx.strokeStyle = 'rgb(' + c.ok + ')'; ctx.lineWidth = LWH; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x - 6, y); ctx.lineTo(x - 1, y + 5); ctx.lineTo(x + 7, y - 5); ctx.stroke(); ctx.lineCap = 'butt'; }
   function draw(now) {
-    var t = still ? 0 : (now - t0) / 1000, cyc = Math.floor(t / 8), u = t % 8, tool = cyc % 2 ? 't2' : 't1', c = pal();
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
-    var seq = [['req', 'agent', 0, 1.1], ['agent', tool, 1.1, 2.4], [tool, 'chk', 2.4, 3.8], ['chk', 'ans', 3.8, 4.8]];
-    var lit = {}; seq.forEach(function (s) { if (u >= s[2]) { lit[s[0]] = 1; lit[s[1]] = 1; } });
-    ctx.lineWidth = 1.2;
-    EDGES.forEach(function (e) {
-      var pts = route(pos[e[0]], pos[e[1]]);
-      var isTool = /^t[12]$/.test(e[0]) || /^t[12]$/.test(e[1]);
-      var chosen = e[0] === tool || e[1] === tool || !isTool;
-      var alpha = still ? 0.7 : (chosen ? 0.7 : 0.18);
-      ctx.strokeStyle = 'rgba(' + c.line + ',' + alpha + ')'; ctx.fillStyle = ctx.strokeStyle;
-      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.stroke();
-      var q = pts[pts.length - 1]; ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(q[0] - 4, q[1] - 7); ctx.lineTo(q[0] + 4, q[1] - 7); ctx.closePath(); ctx.fill();
-    });
-    if (!still) seq.forEach(function (s) {
-      if (u >= s[2] && u < s[3]) { var pt = at(route(pos[s[0]], pos[s[1]]), (u - s[2]) / (s[3] - s[2])); ctx.fillStyle = 'rgb(' + c.ac + ')'; ctx.beginPath(); ctx.arc(pt[0], pt[1], 4.5, 0, 6.283); ctx.fill(); }
-    });
-    NODES.forEach(function (n) {
-      var p = pos[n.id], isTool = n.id === 't1' || n.id === 't2';
-      var on = still || !isTool || n.id === tool, hot = !still && lit[n.id] && (!isTool || n.id === tool);
-      ctx.globalAlpha = on ? 1 : 0.38;
-      ctx.fillStyle = 'rgba(' + c.card + ',0.95)'; ctx.strokeStyle = hot ? 'rgb(' + c.ac + ')' : 'rgba(' + c.line + ',1)'; ctx.lineWidth = hot ? 1.6 : 1;
-      var r = 10, x = p.x - p.w / 2, y = p.y - p.h / 2;
-      ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + p.w - r, y); ctx.quadraticCurveTo(x + p.w, y, x + p.w, y + r); ctx.lineTo(x + p.w, y + p.h - r); ctx.quadraticCurveTo(x + p.w, y + p.h, x + p.w - r, y + p.h); ctx.lineTo(x + r, y + p.h); ctx.quadraticCurveTo(x, y + p.h, x, y + p.h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = 'rgb(' + c.fg + ')'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n.t, p.x, p.y + 1);
+    var c = pal(), t = (now - t0) / 1000, cyc = Math.floor(t / CYCLE), u = still ? CYCLE - 2 : t % CYCLE;
+    var fadeOut = still ? 1 : clamp((CYCLE - u) / 1.2), fadeIn = still ? 1 : clamp(u / 1.0);
+    var goalAt = START + 3 * EX - 0.1, triAt = goalAt + 0.8, decideAt = goalAt + 2.6;
+    var fg = 'rgb(' + c.fg + ')', fgSoft = 'rgba(' + c.fg + ',0.72)', ac = 'rgb(' + c.ac + ')', okc = 'rgb(' + c.ok + ')';
+    ctx.setTransform(dpr * sc, 0, 0, dpr * sc, dpr * ox, dpr * oy); ctx.clearRect(-ox / sc, -oy / sc, W / sc, H / sc);
+    ctx.textBaseline = 'middle'; var blur = 'filter' in ctx;
+
+    /* stage label: the old text fades out while the new one fades in */
+    var stAt = [0, START, goalAt];
+    ctx.font = '500 13px "JetBrains Mono", ui-monospace, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = ac;
+    for (var si = 0; si < 3; si++) {
+      var inA = si === 0 ? 1 : clamp((u - (stAt[si] - 0.15)) / 0.3), outA = si === 2 ? 0 : clamp((u - (stAt[si + 1] - 0.15)) / 0.3);
+      ctx.globalAlpha = (still ? (si === 2 ? 1 : 0) : (inA - outA)) * fadeOut; if (ctx.globalAlpha > 0.01) ctx.fillText(STAGES[si], BW / 2, 12);
+    }
+    ctx.globalAlpha = 1;
+
+    /* problem: starts vague (blurred, dashed) and sharpens with every answered question */
+    var clarity = still ? 1 : clamp((u - START) / (3 * EX));
+    var k = Math.floor((u - START) / EX), f = ((u - START) % EX) / EX, asking = !still && u >= START && k < 3;
+    card(PY, PH, clarity < 1 ? 'rgba(' + c.line + ',1)' : 'rgba(' + c.ac + ',0.9)', fadeIn * fadeOut, clarity < 1);
+    ctx.globalAlpha = fadeIn * fadeOut; label('PROBLEM', 42, PY - 11, fgSoft);
+    if (blur) ctx.filter = 'blur(' + ((1 - ease(clarity)) * 3).toFixed(2) + 'px)';
+    main('a slow, manual process nobody trusts', 42, PY + 10, fg);
+    if (blur) ctx.filter = 'none'; ctx.globalAlpha = 1;
+
+    /* questions: asked on the way down to the goal, answered on the way back up */
+    var lx = 64, ly0 = PY + PH / 2, ly1 = GY - GH / 2, mid = (ly0 + ly1) / 2;
+    ctx.globalAlpha = fadeIn * fadeOut; ctx.strokeStyle = 'rgba(' + c.line + ',0.9)'; ctx.lineWidth = LW; ctx.setLineDash([3, 5]);
+    ctx.beginPath(); ctx.moveTo(lx, ly0); ctx.lineTo(lx, ly1); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    if (asking) {
+      var down = f < 0.5, ff = ease(down ? f * 2 : (f - 0.5) * 2), dy = down ? ly0 + (ly1 - ly0) * ff : ly1 - (ly1 - ly0) * ff;
+      ctx.fillStyle = ac; ctx.beginPath(); ctx.arc(lx, dy, 5, 0, 6.283); ctx.fill();
+      if (down) {
+        ctx.font = '500 13px Inter, system-ui, sans-serif'; var qw = ctx.measureText(QS[k]).width + 24, qa = Math.min(clamp(ff * 6), clamp((1 - ff) * 6 + 0.5));
+        ctx.globalAlpha = qa; ctx.fillStyle = 'rgba(' + c.card + ',0.96)'; ctx.strokeStyle = 'rgba(' + c.ac + ',0.9)'; ctx.lineWidth = LW;
+        rr(lx + 16, mid - 13, qw, 26, 13); ctx.fill(); ctx.stroke();
+        cap(QS[k], lx + 28, mid + 1, fg); ctx.globalAlpha = 1;
+      }
+    }
+
+    /* goal: appears once the questions are answered */
+    var ga = still ? 1 : ease(clamp((u - goalAt) / 0.5)) * fadeOut;
+    if (ga > 0.01) {
+      card(GY, GH, 'rgba(' + c.ok + ',0.95)', ga);
+      label('GOAL  ·  agreed with the client', 42, GY - 11, fgSoft); main('catch what matters early', 42, GY + 10, fg); check(350, GY, c);
       ctx.globalAlpha = 1;
-    });
-    /* fact-checker verdict: a traffic light. The still view shows all three; the loop lights one at a time and names it in text. */
-    var ck = pos.chk, vx = ck.x + ck.w / 2 + 18, vy = ck.y, vi = cyc % 3;
-    VERDICT.forEach(function (v, i) { ctx.fillStyle = v[0]; ctx.globalAlpha = (still || (u >= 3.8 && i === vi)) ? 1 : 0.22; ctx.beginPath(); ctx.arc(vx + i * 16, vy, 5, 0, 6.283); ctx.fill(); });
-    ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(' + c.fg + ',0.75)'; ctx.textAlign = 'left';
-    ctx.fillText(still ? 'verdict: green, amber or red' : 'verdict: ' + VERDICT[vi][1], vx - 6, vy + 22);
+    }
+
+    /* trade-offs: a cost, speed, accuracy triangle; the dot settles where we agree */
+    var ta = still ? 1 : ease(clamp((u - triAt) / 0.5)) * fadeOut;
+    if (ta > 0.01) {
+      card(TY, TH, 'rgba(' + c.ac + ',0.9)', ta); ctx.globalAlpha = ta;
+      label('TRADE-OFFS', 42, TY - 13, fgSoft); main('cost, speed, accuracy', 42, TY + 10, fg);
+      var A = [300, TY - 26], B = [270, TY + 24], C = [330, TY + 24];
+      ctx.strokeStyle = 'rgba(' + c.line + ',1)'; ctx.lineWidth = LW; ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.lineTo(C[0], C[1]); ctx.closePath(); ctx.stroke();
+      cap('accuracy', A[0] + 10, A[1] + 3, fgSoft); cap('speed', B[0] - 6, B[1] - 1, fgSoft, 'right'); cap('cost', C[0] + 6, C[1] - 1, fgSoft);
+      var s3 = still ? 1 : ease(clamp((u - triAt - 0.3) / 1.4)), wob = (1 - s3) * 9, dx = 300 - 5 * s3 + Math.sin(t * 3.1) * wob, dy2 = TY + 8 - 2 * s3 + Math.cos(t * 2.3) * wob * 0.6;
+      ctx.fillStyle = ac; ctx.beginPath(); ctx.arc(dx, dy2, 4.5, 0, 6.283); ctx.fill();
+      if (s3 >= 1) { ctx.strokeStyle = okc; ctx.lineWidth = LWH; ctx.beginPath(); ctx.arc(dx, dy2, 9.5, 0, 6.283); ctx.stroke(); }
+      ctx.globalAlpha = 1;
+    }
+
+    /* approach: chips flick through the options, the simplest one that fits stays lit */
+    var ca = still ? 1 : ease(clamp((u - decideAt) / 0.5)) * fadeOut;
+    if (ca > 0.01) {
+      card(AY, AH, 'rgba(' + c.ac + ',0.9)', ca); ctx.globalAlpha = ca;
+      label('APPROACH', 42, AY - 11, fgSoft); main('simplest that works', 42, AY + 10, fg);
+      var pick = still ? 1 : cyc % 3, pf = still ? 1 : ease(clamp((u - decideAt - 0.4) / 0.4));
+      ctx.font = '500 12px "JetBrains Mono", ui-monospace, monospace'; var x = BW - 36, ws = CHIPS.map(function (ch) { return ctx.measureText(ch).width + 14; });
+      for (var j = CHIPS.length - 1; j >= 0; j--) {
+        x -= ws[j]; var on = j === pick;
+        ctx.globalAlpha = ca * (on ? 1 : 1 - 0.12 * pf);
+        ctx.fillStyle = 'rgba(' + c.card + ',0.96)'; ctx.strokeStyle = 'rgba(' + c.line + ',1)'; ctx.lineWidth = LW;
+        rr(x, AY - 12, ws[j], 24, 12); ctx.fill(); ctx.stroke();
+        if (on && pf > 0) { ctx.globalAlpha = ca * pf; ctx.fillStyle = 'rgba(' + c.ac + ',0.2)'; ctx.strokeStyle = ac; ctx.lineWidth = LWH; rr(x, AY - 12, ws[j], 24, 12); ctx.fill(); ctx.stroke(); }
+        ctx.globalAlpha = ca * (on ? 1 : 1 - 0.12 * pf); label(CHIPS[j], x + 7, AY + 1, on && pf > 0.5 ? fg : fgSoft); x -= 4;
+      }
+      ctx.globalAlpha = 1;
+    }
   }
   function loop(now) {
     requestAnimationFrame(loop);

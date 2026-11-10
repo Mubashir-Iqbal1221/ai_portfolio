@@ -198,7 +198,7 @@ html.no-gl .hero-graph canvas{display:none}
 
 @media (max-width:900px){
   #top{grid-template-columns:1fr;gap:var(--s5)}
-  .hero-graph{max-height:340px;aspect-ratio:4/3}
+  .hero-graph{max-height:420px;max-width:400px;aspect-ratio:10/11}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
     .stack-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .about-card{grid-template-columns:1fr;gap:var(--s5)}
