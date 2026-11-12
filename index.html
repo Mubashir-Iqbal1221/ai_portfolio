@@ -9,7 +9,7 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mubashir Iqbal, ML Engineer: LLM agents and edge vision">
 <meta property="og:description" content="ML engineer in Islamabad. Evaluated LLM alert pipelines and real-time video event detection on NVIDIA Jetson. Project write-ups and contact.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2305070b'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23e8a24a' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2308090A'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23818CF8' stroke-width='2'/%3E%3C/svg%3E">
 <script>document.documentElement.classList.add("js");try{var m=localStorage.getItem("mode");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-mode",m)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,7 +43,7 @@
         <a class="btn ghost" href="#work">See the work <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       </div>
     </div>
-    <div class="hero-graph" id="hero-graph" role="img" aria-label="Illustration of how I start work: a vague problem becomes a clear goal by asking questions. Then comes a triangle of cost, speed and accuracy, where we agree the balance, and a choice of the simplest approach that works: a language model, an agent, or computer vision." data-clusters='[&quot;Beyond ONE&quot;, &quot;VISTOS&quot;, &quot;Eyewear recommendation&quot;, &quot;Agent platform with MCP&quot;, &quot;Blog Writing Agent&quot;]'><canvas id="webgl" aria-hidden="true"></canvas><span class="graph-cap" aria-hidden="true">clarify(illustration)</span></div>
+    <div class="hero-graph" id="hero-graph" role="img" aria-label="Illustration of how I start work: a vague problem becomes a clear goal by asking questions. Then comes a triangle of cost, speed and accuracy, where we agree the balance, and a choice of the simplest approach that works: a language model, an agent, or computer vision."><canvas id="hero-canvas" aria-hidden="true"></canvas><span class="graph-cap" aria-hidden="true">clarify(illustration)</span></div>
     <!-- STATS: provisional values from docs/baseline/site_content.md (proof_strip); the owner will review the numbers later -->
     <div class="stats">
       <div class="stat"><b>F1 0.88</b><p>Relevancy gate, 132 labelled events, half synthetic</p></div>
@@ -225,9 +225,9 @@
      An illustration of how I start work, not a live system. Drawn on a 400 x 440 board, scaled to fit.
      Rules used: one radius (12), two line weights (1.25 and 2), three text styles (label, main line, caption),
      24 unit gaps with a wider gap only where the questions travel, all text at least 4.5:1 in both modes. ---- */
-  var host = $('hero-graph'), cv = $('webgl');
+  var host = $('hero-graph'), cv = $('hero-canvas');
   var ctx = cv.getContext ? cv.getContext('2d') : null;
-  if (!ctx) { html.classList.add('no-gl'); return; }
+  if (!ctx) { html.classList.add('no-canvas'); return; }
   var W = 0, H = 0, dpr = 1, sc = 1, ox = 0, oy = 0, t0 = performance.now(), visible = true;
   var BW = 400, BH = 440, CYCLE = 15, START = 1.0, EX = 1.2, R = 12, LW = 1.25, LWH = 2;
   var QS = ['who is it for?', 'what is good enough?', 'what can we trade?'];

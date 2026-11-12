@@ -16,7 +16,7 @@ Needs Node 20 or newer (`.nvmrc` says 22).
     index.html               home page: hero, work, stack, about, contact
     case/                    case study pages (every .html here is built automatically)
     writing/                 blog post template and posts (same rule)
-    design-system/site.css   the single stylesheet
+    design-system/site.css   the single stylesheet: tokens first, then components
     public/                  files copied as they are (images, og image, favicon)
     vite.config.js           page list and build settings
     docs/baseline/           brand, UI and content standards, site copy, roadmap (local only, gitignored)

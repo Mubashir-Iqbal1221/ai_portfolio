@@ -18,8 +18,6 @@
   --card-grad:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0));
   --btn-bg:#EDEDED;
   --btn-text:#000;
-  --glow-a:rgba(99,102,241,.22);
-  --glow-b:rgba(139,92,246,.12);
   --grad-head:linear-gradient(90deg,#fff 0%,#a3a3a3 50%,#fff 100%);
   --font:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
   --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
@@ -33,7 +31,7 @@ html[data-mode="light"]{
   --line:rgba(0,0,0,.1);--line-hi:rgba(0,0,0,.22);--ctl:#737373;
   --accent:#4338CA;--accent-fill:#4F46E5;--accent-soft:rgba(79,70,229,.08);
   --glass:rgba(255,255,255,.78);--card-grad:linear-gradient(180deg,rgba(0,0,0,.025),rgba(0,0,0,0));
-  --btn-bg:#171717;--btn-text:#FFFFFF;--glow-a:rgba(99,102,241,.1);--glow-b:rgba(139,92,246,.06);
+  --btn-bg:#171717;--btn-text:#FFFFFF;
   --grad-head:linear-gradient(90deg,#000 0%,#525252 50%,#000 100%);
   color-scheme:light;
 }
@@ -41,11 +39,9 @@ html[data-mode="light"]{
 html{background:var(--bg);scroll-behavior:smooth;scrollbar-width:none}
 html::-webkit-scrollbar{display:none}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:var(--step-2);line-height:1.65;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden;transition:background-color .4s,color .4s;min-height:100vh;position:relative}
-/* ambient glows: static, decorative, no motion (film grain from the template was dropped: it cost first paint) */
 a{color:inherit;text-decoration:none}
 a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 ::selection{background:var(--accent-soft);color:var(--accent)}
-.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .skip{position:fixed;left:var(--s3);top:-64px;z-index:100;padding:var(--s3) var(--s4);background:var(--btn-bg);color:var(--btn-text);font:600 var(--step-0) var(--font);border-radius:var(--radius-pill)}.skip:focus{top:var(--s3)}
 #bar{position:fixed;top:0;left:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--accent-fill);z-index:60}
 .ico{width:16px;height:16px;display:block;flex:none}
@@ -78,7 +74,6 @@ html.motion-off .icon-btn .mplay{display:block}
 main{position:relative;z-index:10;max-width:var(--max);margin:0 auto;padding:0 var(--s5)}
 section{scroll-margin-top:96px}
 h1,h2,h3{font-weight:600;letter-spacing:-.025em;color:var(--strong);text-wrap:balance}
-.label{font-size:var(--step-0);font-weight:500;color:var(--muted);letter-spacing:.02em}
 
 /* hero */
 #top{padding:128px 0 var(--s7);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:var(--s5) var(--s7);align-items:start}
@@ -90,8 +85,6 @@ h1,h2,h3{font-weight:600;letter-spacing:-.025em;color:var(--strong);text-wrap:ba
 .hero-title .line{display:block}
 .hero-title .grad{background:var(--grad-head);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--muted)}
 @keyframes lift{from{transform:translateY(14px)}to{transform:none}}
-@keyframes swap{from{transform:translateY(6px)}to{transform:none}}
-@keyframes swap{from{transform:translateY(6px)}to{transform:none}}
 .hero-title .line,.say,.lede,.cta,.stats{animation:lift .6s cubic-bezier(.16,1,.3,1) both}
 .hero-title .line:nth-child(2){animation-delay:.06s}.say{animation-delay:.1s}.lede{animation-delay:.14s}.cta{animation-delay:.18s}.stats{animation-delay:.22s}
 .say{display:block;min-height:56px;margin-bottom:var(--s3);font-size:var(--step-3);color:var(--muted)}
@@ -126,7 +119,6 @@ html[data-mode="light"] .stat b span{color:var(--accent)}
 .project.is-link:focus-within{border-color:var(--accent)}
 .badge b{display:block;font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.15;color:var(--strong)}
 .badge span{display:block;margin-top:var(--s2);font-size:var(--step-1);line-height:1.45;color:var(--muted)}
-.badge.num b{font-family:var(--mono);font-size:var(--step-2);font-weight:400;color:var(--faint)}
 .p-meta{font-size:var(--step-0);font-weight:500;color:var(--accent);margin-bottom:var(--s2)}
 .project h3{font-size:24px;line-height:1.2;margin-bottom:var(--s3)}
 .stretch{display:inline-flex;align-items:center;min-height:44px}
@@ -146,7 +138,6 @@ html[data-mode="light"] .stat b span{color:var(--accent)}
 .about-card p a{color:var(--accent);font-weight:500;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
 .about-card p a::after{content:"\2197";display:inline-block;margin-left:.2em;font-size:.85em;text-decoration:none}
 .about-card p a:hover{text-decoration-thickness:2px}
-.about-card p.aside{font-size:var(--step-1);margin-bottom:0}
 .facts{display:grid;align-content:start;list-style:none}
 .facts li{display:grid;grid-template-columns:6.5rem minmax(0,1fr);gap:var(--s4);padding:var(--s3) 0;border-bottom:1px solid var(--line);font-size:var(--step-1)}
 .facts li:first-child{border-top:1px solid var(--line)}
@@ -164,7 +155,7 @@ footer nav a:hover{color:var(--strong)}
 /* reveal on scroll: visible by default, animates when entering */
 .rv.in{animation:lift .7s cubic-bezier(.16,1,.3,1) both}
 
-/* case studies and posts (static, no scene) */
+/* case studies and posts */
 .prose-wrap{max-width:calc(68ch + 2 * var(--s5));margin:0 auto;padding:128px var(--s5) var(--s9);position:relative;z-index:10;font-size:var(--step-3);line-height:1.6;color:var(--muted)}
 .prose-wrap h1{font-size:clamp(32px,4.2vw,48px);line-height:1.05;margin-bottom:var(--s4)}
 .prose-wrap h2{font-size:var(--step-4);line-height:1.15;margin:var(--s7) 0 var(--s3)}
@@ -193,8 +184,8 @@ footer nav a:hover{color:var(--strong)}
 .bar span:last-child{color:var(--text)}
 
 html:not(.js) .hero-graph{display:none}
-html.no-gl .hero-graph{background:radial-gradient(60% 60% at 50% 50%,var(--accent-soft),transparent 70%);border-radius:var(--radius-card)}
-html.no-gl .hero-graph canvas{display:none}
+html.no-canvas .hero-graph{background:radial-gradient(60% 60% at 50% 50%,var(--accent-soft),transparent 70%);border-radius:var(--radius-card)}
+html.no-canvas .hero-graph canvas{display:none}
 
 @media (max-width:900px){
   #top{grid-template-columns:1fr;gap:var(--s5)}
