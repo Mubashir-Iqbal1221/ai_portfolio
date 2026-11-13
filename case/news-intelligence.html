@@ -45,7 +45,11 @@
 
   <h2>What I built and decided</h2>
   <figure class="p-fig">
-    <ol class="flow"><li>News in</li><li class="hot">Relevance filter</li><li>Claims</li><li>Links between claims</li><li>Scores</li><li>Web check</li><li>Written alert</li><li>Published</li></ol>
+    <div class="pipe-wrap" hidden>
+      <div class="pipe" id="pipe" role="img" aria-label="Animated illustration, looping. Many news articles arrive and copies of the same story are grouped. A filter keeps a story about rising fuel prices and drops a sponsorship story. The kept story is split into claims, linked, scored by code and checked on the web. One alert, Prepaid top-ups may drop, is published and locked, and a later follow-up does not change it."><canvas id="pipe-canvas" aria-hidden="true"></canvas></div>
+      <button class="btn ghost" id="pipe-btn" type="button">Pause animation</button>
+    </div>
+    <figcaption>Illustration of one example story. The articles and counts are made up.</figcaption>
   </figure>
   <ul>
     <li><strong>Stages, not one agent.</strong> The first version used a single agent for every decision. I split the MVP into stages that each do one job and save their result, so each one can be tested on its own.</li>
@@ -72,6 +76,225 @@
 </main>
 <script>
 (function(){var b=document.getElementById('theme'),h=document.documentElement;function s(){var l=h.getAttribute('data-mode')==='light';b.setAttribute('aria-pressed',l?'true':'false');b.setAttribute('aria-label',l?'Switch to dark mode':'Switch to light mode')}s();b.addEventListener('click',function(){var l=h.getAttribute('data-mode')!=='light';h.setAttribute('data-mode',l?'light':'dark');try{localStorage.setItem('mode',l?'light':'dark')}catch(e){}s()})})();
+</script>
+<script>
+/* Pipeline animation: one example story moving through the alert pipeline. An illustration, not live data.
+   Board 440 x 600 scaled to fit. Loop with a Pause button, a still final frame under reduced motion,
+   runs only while on screen. */
+(function () {
+  var wrap = document.querySelector('.pipe-wrap'), host = document.getElementById('pipe'), cv = document.getElementById('pipe-canvas'), btn = document.getElementById('pipe-btn');
+  if (!wrap || !host || !cv || !cv.getContext) return;
+  var ctx = cv.getContext('2d'), html = document.documentElement, mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var BW = 440, BH = 620, CYCLE = 24, paused = false, visible = false, dirty = true, t = 0, last = performance.now();
+  var W = 0, H = 0, dpr = 1, sc = 1, ox = 0, oy = 0, TF = 1;
+  try { paused = localStorage.getItem('motion') === 'off'; } catch (e) {}
+
+  function pal() {
+    return html.getAttribute('data-mode') === 'light'
+      ? { fg: '23,23,23', ac: '67,56,202', line: '115,115,115', card: '255,255,255', ok: '15,118,110', bad: '185,28,28' }
+      : { fg: '234,234,234', ac: '129,140,248', line: '115,115,115', card: '15,17,18', ok: '84,196,178', bad: '248,113,113' };
+  }
+  function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function ease(v) { v = clamp(v); return v * v * (3 - 2 * v); }
+  function lerp(a, b, k) { return a + (b - a) * k; }
+  function rgba(c, a) { return 'rgba(' + c + ',' + (a === undefined ? 1 : a) + ')'; }
+
+  var g = {
+    ctx: ctx,
+    rr: function (x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); },
+    label: function (s, x, y, col, al) { ctx.font = '500 ' + 12 * TF + 'px "JetBrains Mono", ui-monospace, monospace'; ctx.textAlign = al || 'left'; ctx.fillStyle = col; ctx.fillText(s, x, y); },
+    main: function (s, x, y, col, al) { ctx.font = '600 ' + 15 * TF + 'px Inter, system-ui, sans-serif'; ctx.textAlign = al || 'left'; ctx.fillStyle = col; ctx.fillText(s, x, y); },
+    cap: function (s, x, y, col, al) { ctx.font = '500 ' + 13 * TF + 'px Inter, system-ui, sans-serif'; ctx.textAlign = al || 'left'; ctx.fillStyle = col; ctx.fillText(s, x, y); },
+    check: function (x, y, col) { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x - 6, y); ctx.lineTo(x - 1, y + 5); ctx.lineTo(x + 7, y - 5); ctx.stroke(); ctx.lineCap = 'butt'; },
+    cross: function (x, y, col) { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x - 5, y - 5); ctx.lineTo(x + 5, y + 5); ctx.moveTo(x + 5, y - 5); ctx.lineTo(x - 5, y + 5); ctx.stroke(); ctx.lineCap = 'butt'; },
+    lock: function (x, y, col, k) { ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y - 4 - 3 * (1 - k), 5, Math.PI, 0); ctx.stroke(); g.rr(x - 8, y - 4, 16, 12, 3); ctx.fill(); }
+  };
+
+  function drawD(g, u, c, F, still) {
+    var ctx = g.ctx, fg = rgba(c.fg), soft = rgba(c.fg, 0.72), ac = rgba(c.ac), ok = rgba(c.ok), bad = rgba(c.bad), mute = rgba(c.fg, 0.5);
+    var R = [44, 126, 200, 290, 376, 468, 551];
+    var L = [['news in'], ['same story'], ['relevance', 'filter'], ['claims'], ['linked and', 'scored by code'], ['candidates,', 'web check'], ['published', 'alert']];
+    /* a line is [text, 'ok'|'no']: a mark (indigo tick or red cross) and flat, solid text */
+    function caption(lines, y, t0) {
+      var k = (still ? 1 : ease((u - t0) / 0.4)) * F; if (k < 0.01) return;
+      ctx.globalAlpha = k; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = rgba(c.card, 0.9);
+      ctx.font = '500 ' + 13 * TF + 'px Inter, system-ui, sans-serif';
+      for (var q = 0; q < lines.length; q++) {
+        var ln = lines[q], ty = y + q * 18; ctx.strokeStyle = rgba(c.card, 0.9); ctx.lineWidth = 4; ctx.lineCap = 'butt'; 
+        if (ln[1]) {
+          var w = ctx.measureText(ln[0]).width, left = Math.max(8, Math.min(282 - (w + 22) / 2, 432 - 22 - w));
+          ctx.textAlign = 'left'; ctx.strokeText(ln[0], left + 22, ty);
+          if (ln[1] === 'ok') g.check(left + 7, ty, ac);
+          else { ctx.strokeStyle = bad; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(left + 2, ty - 5); ctx.lineTo(left + 12, ty + 5); ctx.moveTo(left + 12, ty - 5); ctx.lineTo(left + 2, ty + 5); ctx.stroke(); ctx.lineCap = 'butt'; ctx.strokeStyle = rgba(c.card, 0.9); }
+          g.cap(ln[0], left + 22, ty, ac);
+        } else {
+          var cw = ctx.measureText(ln[0]).width, cx = Math.max(8 + cw / 2, Math.min(282, 432 - cw / 2));
+          ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeText(ln[0], cx, ty);
+          g.cap(ln[0], cx, ty, ac, 'center');
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+    var act = still ? 6 : u < 2.6 ? 0 : u < 4.6 ? 1 : u < 8.0 ? 2 : u < 9.6 ? 3 : u < 15.0 ? 4 : u < 17.4 ? 5 : 6;
+    ctx.globalAlpha = F;
+    for (var r = 0; r < 7; r++) {
+      var on = r === act;
+      for (var q = 0; q < L[r].length; q++) g.label(L[r][q], 20, R[r] + (q - (L[r].length - 1) / 2) * 16, on ? ac : soft);
+      ctx.strokeStyle = rgba(c.line, on ? 0.6 : 0.25); ctx.lineWidth = 1; ctx.setLineDash([2, 6]);
+      ctx.beginPath(); ctx.moveTo(140, R[r]); ctx.lineTo(424, R[r]); ctx.stroke(); ctx.setLineDash([]);
+    }
+    g.cap('illustration, not real counts', 424, 18, soft, 'right');
+    ctx.globalAlpha = 1;
+
+    /* one shape, drawn as a rounded square rotated by rot: t=0 square, t=1 circle (cornerFrac), or a diamond */
+    function shape(x, y, h, cr, rot) { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); g.rr(-h, -h, 2 * h, 2 * h, cr); ctx.fill(); ctx.restore(); }
+
+    /* symbol for one story: its articles and its family share it */
+    function poly(n, rad, a0, inner) {
+      var cnt = inner ? n * 2 : n;
+      for (var j = 0; j < cnt; j++) { var a = a0 + j * Math.PI * 2 / cnt, q = inner && j % 2 ? rad * inner : rad; if (j) ctx.lineTo(Math.cos(a) * q, Math.sin(a) * q); else ctx.moveTo(Math.cos(a) * q, Math.sin(a) * q); }
+      ctx.closePath();
+    }
+    function sym(t, x, y, h) {
+      ctx.save(); ctx.translate(x, y); ctx.beginPath();
+      if (t === 0) ctx.rect(-h * 0.9, -h * 0.9, h * 1.8, h * 1.8);
+      else if (t === 1) ctx.arc(0, 0, h, 0, 6.283);
+      else if (t === 2) poly(3, h * 1.25, -Math.PI / 2);
+      else if (t === 3) { ctx.rect(-h * 0.35, -h, h * 0.7, 2 * h); ctx.rect(-h, -h * 0.35, 2 * h, h * 0.7); }
+      else if (t === 4) poly(6, h * 1.05, 0);
+      else if (t === 5) poly(5, h * 1.3, -Math.PI / 2, 0.45);
+      else if (t === 6) poly(5, h * 1.1, -Math.PI / 2);
+      else if (t === 8) poly(4, h * 1.35, -Math.PI / 2);
+      else g.rr(-h * 1.2, -h * 0.6, h * 2.4, h * 1.2, h * 0.6);
+      ctx.fill(); ctx.restore();
+    }
+    /* 24 articles about 8 stories. Each story (family) has its own symbol and its copies share it. The display order is
+       scrambled so different symbols sit side by side in "news in". Copies slide to their family and become one larger
+       symbol of the same type. The followed story is family 2 (a triangle: prices up); family 5 is the sponsorship (star). */
+    var SZ = [4, 2, 3, 3, 4, 3, 3, 2], SYM = [0, 1, 2, 3, 4, 5, 6, 7], FX = [], SORT = [], FAMOF = [], FIRST = [-1, -1, -1, -1, -1, -1, -1, -1];
+    var HF = 2, SPON = 5, PASS = { 1: 1, 2: 1, 6: 1 };
+    for (var f = 0; f < 8; f++) { FX.push(172 + f * 34); for (var k0 = 0; k0 < SZ[f]; k0++) SORT.push(f); }
+    for (var s0 = 0; s0 < 24; s0++) { var fm = SORT[(s0 * 7) % 24]; FAMOF.push(fm); if (FIRST[fm] < 0) FIRST[fm] = s0; }
+    var m1 = still ? 1 : ease((u - 2.6) / 1.2), down = still ? 1 : ease((u - 4.8) / 1.0);
+    var drop = still ? 1 : ease((u - 6.0) / 0.9), split = still ? 1 : clamp((u - 8.0) / 1.0);
+    for (var i = 0; i < 24; i++) {
+      if (still) break;
+      var fi = FAMOF[i], x0 = 160 + (i % 12) * 22, y0 = R[0] - 10 + Math.floor(i / 12) * 20;
+      var ap = clamp((u - i * 0.05) / 0.4), rad = 4 + SZ[fi] * 1.6;
+      var bx = lerp(x0, FX[fi], m1), by = lerp(y0, R[1], m1) + (R[2] - R[1]) * down, bh = lerp(5, rad, m1), al = ap;
+      if (!PASS[fi]) { bx += 40 * drop; al *= 1 - drop; } else { bh *= 1 - 0.7 * split; al *= 1 - split; }
+      if (al < 0.01) continue;
+      ctx.globalAlpha = al * F; ctx.fillStyle = fi === HF ? ac : mute;
+      sym(SYM[fi], bx, by, bh);
+      if (i === FIRST[fi] && fi === HF) { ctx.strokeStyle = ac; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(bx, by, rad + 6, 0, 6.283); ctx.globalAlpha = al * F * m1; ctx.stroke(); }
+      if (i === FIRST[fi] && fi === SPON && u > 6.0) { ctx.globalAlpha = al * F; g.cross(bx, by - 20, bad); }
+    }
+    ctx.globalAlpha = 1;
+    caption([['different stories, different symbols'], ['follow one: fuel prices rise']], R[0] + 36, 0.8);
+    caption([['copies of one story are grouped as one']], R[1] + 26, 3.2);
+    caption([['kept: fuel, less money for top-ups', 'ok'], ['dropped: sponsorship, no business impact', 'no']], R[2] + 26, 6.0);
+
+    /* each kept family dot splits into claims (they start inside the dot and move out), the claims join groups by signal,
+       each group then closes up into one candidate diamond, the kept diamond becomes the published alert card */
+    var FAMC = [1, 1, 1, 2, 2, 2, 6, 6, 6], GRP = [1, 1, 0, 0, 0, 0, 0, 2, 2], HEROC = { 3: 1, 4: 1, 5: 1 };
+    var CX = [220, 330, 405], SC = [0.5, 0.4, 0.8, 0.9, 0.7, 0.8, 0.7, 0.25, 0.3], seen = [0, 0, 0], pos = [];
+    var k1 = still ? 1 : ease((u - 8.0) / 1.0), k2 = still ? 1 : ease((u - 9.6) / 1.2);
+    for (var m = 0; m < 9; m++) {
+      var gg = GRP[m], n = seen[gg]++, ang = n * 1.25 - 1.9;
+      var cx = CX[gg] + Math.cos(ang) * 24, cy = R[4] + Math.sin(ang) * 20;
+      pos.push([lerp(lerp(FX[FAMC[m]], 160 + m * 30, k1), cx, k2), lerp(lerp(R[2], R[3], k1), cy, k2)]);
+    }
+    caption([['kept stories split into claims']], R[3] + 26, 8.4);
+    var collapse = still ? 1 : ease((u - 14.0) / 0.9), weak = still ? 1 : clamp((u - 13.0) / 0.8);
+    var webK = still ? 1 : clamp((u - 15.2) / 0.4), drop2 = still ? 1 : ease((u - 15.8) / 0.6), rise = still ? 1 : ease((u - 16.6) / 0.8);
+    var pk = still ? 1 : ease((u - 17.4) / 0.7);
+    var linkA = still ? 0 : ease((u - 10.6) / 0.7) * (1 - collapse), scoreK = still ? 1 : ease((u - 11.6) / 0.8), grow = still ? 1 : clamp((u - 8.0) / 0.6);
+    if (!still) {
+      for (m = 0; m < 9; m++) for (var m2 = m + 1; m2 < 9; m2++) if (GRP[m] === GRP[m2]) {
+        ctx.globalAlpha = grow * F * linkA * (GRP[m] === 2 ? 1 - weak : 1); ctx.strokeStyle = GRP[m] === 0 ? rgba(c.ac, 0.8) : rgba(c.line, 0.7); ctx.lineWidth = 1.25;
+        ctx.beginPath(); ctx.moveTo(pos[m][0], pos[m][1]); ctx.lineTo(pos[m2][0], pos[m2][1]); ctx.stroke();
+      }
+      for (m = 0; m < 9; m++) {
+        var gc = GRP[m], tx = gc === 0 ? 220 : 340;
+        var x = gc === 2 ? pos[m][0] : lerp(pos[m][0], tx, collapse), y = gc === 2 ? pos[m][1] : lerp(pos[m][1], R[5], collapse);
+        var al2 = grow * F;
+        if (gc === 0) { y += (R[6] - R[5]) * rise; al2 *= 1 - pk; }
+        if (gc === 1) { x += 30 * drop2; al2 *= 1 - drop2; }
+        if (gc === 2) al2 *= 1 - weak;
+        if (al2 < 0.01) continue;
+        var t = gc === 2 ? 0 : collapse, rr0 = (3.5 + 4 * SC[m] * scoreK) * grow, h = lerp(rr0, 7.8, t);
+        ctx.globalAlpha = al2; ctx.fillStyle = (HEROC[m] || (gc === 0 && u > 10.8)) ? ac : mute;
+        shape(x, y, h, lerp(h, 1.5, t), t * Math.PI / 4);
+      }
+      ctx.globalAlpha = 1;
+    }
+    caption([['linked with other stories: one stronger signal']], R[4] + 40, 10.8);
+    caption([['scored by code; the weak signal drops']], R[4] + 58, 12.4);
+
+    /* web check marks beside the two candidate diamonds */
+    if (!still && collapse > 0.01 && webK > 0) {
+      ctx.globalAlpha = F * webK * (1 - rise); g.check(244, R[5], ok);
+      ctx.globalAlpha = F * webK * (1 - drop2); g.cross(364 + 30 * drop2, R[5], bad); ctx.globalAlpha = 1;
+    }
+    caption([['kept: outside sources agree', 'ok'], ['dropped: sources do not confirm', 'no']], R[5] + 24, 15.2);
+
+    /* the kept diamond grows into the published alert card, then locks; a follow-up leaves it as sent */
+    if (pk > 0.01) {
+      var cl = lerp(209, 150, pk), cw = lerp(22, 274, pk), ct = R[6] - lerp(11, 23, pk), ch = lerp(22, 46, pk), tk = clamp((pk - 0.5) / 0.5);
+      ctx.globalAlpha = F; ctx.fillStyle = rgba(c.card, 0.96); ctx.strokeStyle = ok; ctx.lineWidth = 1.25;
+      g.rr(cl, ct, cw, ch, lerp(11, 12, pk)); ctx.fill(); ctx.stroke();
+      ctx.globalAlpha = F * tk;
+      g.main('Prepaid top-ups may drop', 166, R[6] - 5, fg); g.cap('linked to its sources', 166, R[6] + 13, soft);
+      var lk = still ? 1 : ease((u - 18.4) / 0.6); if (lk > 0) g.lock(400, R[6], ok, lk);
+      ctx.globalAlpha = 1;
+    }
+    var fu = still ? 1 : ease((u - 19.2) / 0.6) * F;
+    if (fu > 0.01) {
+      ctx.globalAlpha = fu; ctx.fillStyle = rgba(c.card, 0.96); ctx.strokeStyle = ac; ctx.lineWidth = 1.25; ctx.setLineDash([4, 4]);
+      g.rr(150, 578, 274, 21, 10); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+      g.cap('follow-up: the alert stays as sent', 287, 589, fg, 'center'); ctx.globalAlpha = 1;
+    }
+  }
+
+  function layout() {
+    W = host.clientWidth; H = host.clientHeight; if (!W || !H) return;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = W * dpr; cv.height = H * dpr;
+    sc = Math.min(W / BW, H / BH); ox = (W - BW * sc) / 2; oy = (H - BH * sc) / 2;
+    TF = Math.min(1.15, Math.max(1, 0.8 / sc));   /* keep text legible when the board is scaled down */
+    dirty = true;
+  }
+  function setBtn() { btn.hidden = mq.matches; btn.textContent = paused ? 'Play animation' : 'Pause animation'; }
+  btn.addEventListener('click', function () {
+    paused = !paused; try { localStorage.setItem('motion', paused ? 'off' : 'on'); } catch (e) {}
+    setBtn(); dirty = true;
+  });
+  mq.addEventListener('change', function () { setBtn(); dirty = true; });
+  new MutationObserver(function () { dirty = true; }).observe(html, { attributes: true, attributeFilter: ['data-mode'] });
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    var dt = Math.min(0.1, (now - last) / 1000); last = now;
+    var running = !mq.matches && !paused && visible && !document.hidden;
+    if (running) t += dt;
+    if (!running && !dirty) return;
+    dirty = false;
+    if (!W) { layout(); if (!W) return; }
+    var fin = mq.matches || (paused && t === 0);          /* still final frame: reduced motion, or paused before it ever played */
+    var u = fin ? CYCLE * 0.86 : t % CYCLE;
+    var F = fin ? 1 : clamp((CYCLE - u) / 1.0) * clamp(u / 0.6);
+    ctx.setTransform(dpr * sc, 0, 0, dpr * sc, dpr * ox, dpr * oy);
+    ctx.clearRect(-ox / sc, -oy / sc, W / sc, H / sc);
+    ctx.textBaseline = 'middle'; ctx.globalAlpha = 1;
+    drawD(g, u, pal(), F, fin);
+  }
+  if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; dirty = true; }, { threshold: 0.4 }).observe(host);
+  else visible = true;
+  window.addEventListener('resize', layout);
+  if ('ResizeObserver' in window) new ResizeObserver(layout).observe(host);
+  wrap.hidden = false; setBtn();
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function () { layout(); requestAnimationFrame(frame); });
+})();
 </script>
 </body>
 </html>
