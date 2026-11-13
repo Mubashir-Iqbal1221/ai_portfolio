@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Beyond ONE: a relevancy gate scored on 132 labelled families | Mubashir Iqbal</title>
-<meta name="description" content="How an alert pipeline for a news-intelligence product was designed and scored: relevancy gate F1 0.88 on 132 labelled event families, with the errors listed.">
+<title>News intelligence for a telecom group: relevance filter F1 0.88 | Mubashir Iqbal</title>
+<meta name="description" content="Early warning for a telecom group: a news pipeline I designed and led, with a relevance filter scored F1 0.88 on a 132-item benchmark, over half synthetic.">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Beyond ONE: a relevancy gate scored on 132 labelled families | Mubashir Iqbal">
-<meta property="og:description" content="How an alert pipeline for a news-intelligence product was designed and scored: relevancy gate F1 0.88 on 132 labelled event families, with the errors listed.">
+<meta property="og:title" content="News intelligence for a telecom group: relevance filter F1 0.88 | Mubashir Iqbal">
+<meta property="og:description" content="Early warning for a telecom group: a news pipeline I designed and led, with a relevance filter scored F1 0.88 on a 132-item benchmark, over half synthetic.">
 <script>try{var m=localStorage.getItem("mode");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-mode",m)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,35 +28,45 @@
 </header>
 <main id="main" class="prose-wrap">
   <p class="post-meta">Case study · 2026</p>
-  <h1>Beyond ONE: from a news stream to alerts you can trace</h1>
-  <p>I designed the alert pipeline of a news-intelligence product. A relevancy gate drops what does not matter, then claims are extracted, scored and qualified into alerts that cite their sources.</p>
+  <h1>News intelligence for a telecom group</h1>
+  <p>A telecom group wanted early warning from the news on regulation, competitors, prices and payments, so its leaders could act before their competitors. I designed the pipeline that turns a stream of news into short, scored alerts, each linked to its sources.</p>
 
-  <h2>What I did</h2>
+  <p><strong>At a glance</strong></p>
   <ul>
-    <li>Put an embedding gate first (threshold 0.6), so irrelevant articles never reach the costly steps.</li>
-    <li>Rewrote the claim-relations prompt: correct pair decisions went from 73% to 100% on a 40-pair synthetic test, and malformed responses from 5 requests to 0.</li>
-    <li>Planned the tickets and reviewed PRs for two engineers, with the team lead's agreement.</li>
+    <li><strong>Client:</strong> a telecom group in the Middle East and Latin America</li>
+    <li><strong>My role:</strong> main engineer on the alert pipeline in the first version. Designed the pipeline end to end and led its engineering in the MVP.</li>
+    <li><strong>Result:</strong> F1 0.88 for the relevance filter, on a 132-item benchmark I built and labelled, over half of it synthetic</li>
+    <li><strong>Stack:</strong> Python, FastAPI, PostgreSQL with pgvector, Gemini, Terraform, Google Cloud Run</li>
   </ul>
-  <figure class="p-fig">
-    <ol class="flow"><li>Articles</li><li class="hot">Relevancy gate</li><li>Claim extraction</li><li>Relations and scoring</li><li>Alert qualification</li><li>Alert with sources</li></ol>
-  </figure>
 
-  <h2>How the gate scored</h2>
+  <h2>The problem</h2>
+  <p>The product had to read a constant stream of news across several markets and three languages. It had to keep only what could affect the business and turn that into alerts a leader could check and act on.</p>
+  <p>The hardest part showed up during building: much of the news that matters never mentions telecom. In one case, rising fuel prices, higher fees for foreign workers and dearer transport together meant many prepaid customers had less money left for top-ups. None of those stories names a phone company. At the same time, stories that do name a telecom brand, like a sports sponsorship, often do not matter. The filter had to judge how a story could reach the business, not whether it mentions it.</p>
+
+  <h2>What I built and decided</h2>
+  <figure class="p-fig">
+    <ol class="flow"><li>News in</li><li class="hot">Relevance filter</li><li>Claims</li><li>Links between claims</li><li>Scores</li><li>Web check</li><li>Written alert</li><li>Published</li></ol>
+  </figure>
+  <ul>
+    <li><strong>Stages, not one agent.</strong> The first version used a single agent for every decision. I split the MVP into stages that each do one job and save their result, so each one can be tested on its own.</li>
+    <li><strong>Context as impact paths.</strong> I led the work to describe the business as the ways outside news reaches it, including what should not count. This is what lets indirect stories through.</li>
+    <li><strong>The model labels and writes; code decides.</strong> Every score comes from plain functions with versioned weights, so any alert's score can be traced and reproduced.</li>
+    <li><strong>Nothing published changes.</strong> Published alerts are locked, and new information arrives as a follow-up. I also fixed claim extraction, so a new article can add to a story but never rewrite it.</li>
+  </ul>
+  <p>I built the scoring, the extraction fix and the benchmark myself, and set up the Google Cloud infrastructure with Terraform and CI/CD.</p>
+
+  <h2>Results</h2>
   <div class="tablewrap"><table class="d-table">
-    <thead><tr><th scope="col"></th><th scope="col">Gate: relevant</th><th scope="col">Gate: not relevant</th></tr></thead>
+    <thead><tr><th scope="col">Metric</th><th scope="col">Result</th><th scope="col">How measured</th></tr></thead>
     <tbody>
-      <tr><th scope="row">Labelled relevant</th><td><b>83</b></td><td><b>11</b></td></tr>
-      <tr><th scope="row">Labelled not relevant</th><td><b>12</b></td><td><b>26</b></td></tr>
+      <tr><th scope="row">Relevance filter F1</th><td>0.88</td><td>132-item benchmark I labelled. 72 items synthetic or reconstructed. Cut-off tuned on the same set.</td></tr>
+      <tr><th scope="row">Accuracy, direct vs indirect news</th><td>0.98 vs 0.57</td><td>Same benchmark, 55 direct and 21 indirect items</td></tr>
+      <tr><th scope="row">Correct claim-relation decisions</th><td>73% to 100%</td><td>40-decision synthetic test, after I rewrote the prompt</td></tr>
     </tbody>
   </table></div>
-  <p>F1 0.88 on 132 labelled events.</p>
 
-  <h2>Worth flagging</h2>
-  <ul>
-    <li>72 of the 132 events are synthetic or reconstructed, and the labels are proposals, not confirmed truth.</li>
-    <li>Accuracy is 0.75 for the Middle East and Africa against 0.91 for Latin America. Most misses score just under the 0.6 threshold.</li>
-    <li>The 100% prompt result is a small test I labelled myself.</li>
-  </ul>
+  <h2>Limits and next steps</h2>
+  <p>Indirect news, at 0.57, is the main open problem. The labels are mine and have not been reviewed by anyone else. The scoring weights are starting values that have not yet been checked against real outcomes. Next steps are an outside review of the labels, a dated re-run of the benchmark on the current context, and splitting the API from the background work.</p>
 
   <p class="post-meta">Code is private. Email me for a walkthrough: <a href="mailto:mubashiriqbal1221@gmail.com">mubashiriqbal1221@gmail.com</a>. <a href="../index.html#work">Back to all work</a></p>
 </main>
