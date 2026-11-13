@@ -241,7 +241,7 @@
     sc = Math.min(W / BW, H / BH); ox = (W - BW * sc) / 2; oy = (H - BH * sc) / 2;
     hero.dirty = true;
   }
-  function pal() { var l = html.getAttribute('data-mode') === 'light'; return l ? { fg: '23,23,23', ac: '67,56,202', line: '115,115,115', card: '255,255,255', ok: '15,118,110' } : { fg: '234,234,234', ac: '129,140,248', line: '115,115,115', card: '15,17,18', ok: '94,234,212' }; }
+  function pal() { var l = html.getAttribute('data-mode') === 'light'; return l ? { fg: '23,23,23', ac: '67,56,202', line: '115,115,115', card: '252,254,255', ok: '15,118,110' } : { fg: '234,234,234', ac: '129,140,248', line: '115,115,115', card: '15,17,18', ok: '94,234,212' }; }
   function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(v) { v = clamp(v); return v * v * (3 - 2 * v); }
   function rr(x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }

@@ -27,14 +27,19 @@
   color-scheme:dark;
 }
 html[data-mode="light"]{
-  --bg:#FAFAFA;--card:#FFFFFF;--text:#171717;--strong:#000000;--muted:#525252;--faint:#6B6B6B;
-  --line:rgba(0,0,0,.1);--line-hi:rgba(0,0,0,.22);--ctl:#737373;
+  /* light surfaces: grey page, white cards, lavender highlight, grey fill for chips, grey lines */
+  --bg:#F3F3F3;--card:#FCFEFF;--hi:#FBF7FD;--fill:#E5E5E5;
+  --text:#171717;--strong:#000000;--muted:#525252;--faint:#6B6B6B;
+  --line:#DCDCDC;--line-hi:rgba(0,0,0,.22);--ctl:#737373;
   --accent:#4338CA;--accent-fill:#4F46E5;--accent-soft:rgba(79,70,229,.08);
-  --glass:rgba(255,255,255,.78);--card-grad:linear-gradient(180deg,rgba(0,0,0,.025),rgba(0,0,0,0));
+  --glass:rgba(252,254,255,.8);--card-grad:none;
   --btn-bg:#171717;--btn-text:#FFFFFF;
   --grad-head:linear-gradient(90deg,#000 0%,#525252 50%,#000 100%);
   color-scheme:light;
 }
+html[data-mode="light"] .eyebrow,html[data-mode="light"] .flow li.hot{background:var(--hi)}
+html[data-mode="light"] .project.is-link:hover{background:var(--hi)}
+html[data-mode="light"] .tags li,html[data-mode="light"] .chips li{background:var(--fill)}
 *{margin:0;padding:0;box-sizing:border-box}
 html{background:var(--bg);scroll-behavior:smooth;scrollbar-width:none}
 html::-webkit-scrollbar{display:none}
