@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2308090A'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23818CF8' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B0C10'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23818CF8' stroke-width='2'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="../design-system/site.css">
 </head>
 <body>
@@ -92,7 +92,7 @@
   function pal() {
     return html.getAttribute('data-mode') === 'light'
       ? { fg: '23,23,23', ac: '67,56,202', line: '115,115,115', card: '252,254,255', ok: '15,118,110', bad: '185,28,28' }
-      : { fg: '234,234,234', ac: '129,140,248', line: '115,115,115', card: '15,17,18', ok: '84,196,178', bad: '248,113,113' };
+      : { fg: '234,234,234', ac: '129,140,248', line: '115,115,115', card: '21,23,30', ok: '84,196,178', bad: '248,113,113' };
   }
   function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(v) { v = clamp(v); return v * v * (3 - 2 * v); }

@@ -2,10 +2,10 @@
    Design language: near-black page, floating pill nav, large tight Inter headline, glass cards, indigo accent.
    Tokens first, then components. Edit tokens here; do not hard-code colours or spacing below. */
 :root{
-  --bg:#08090A;
-  --card:#0F1112;
+  --bg:#0B0C10;
+  --card:#15171E;
   --text:#EAEAEA;
-  --strong:#FFFFFF;
+  --strong:#F5F5F5;
   --muted:#A3A3A3;
   --faint:#8F8F8F;
   --line:rgba(255,255,255,.09);
@@ -14,11 +14,11 @@
   --accent:#818CF8;
   --accent-fill:#6366F1;
   --accent-soft:rgba(99,102,241,.14);
-  --glass:rgba(15,17,18,.72);
+  --glass:rgba(21,23,30,.72);
   --card-grad:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0));
   --btn-bg:#EDEDED;
   --btn-text:#000;
-  --grad-head:linear-gradient(90deg,#fff 0%,#a3a3a3 50%,#fff 100%);
+  --grad-head:linear-gradient(90deg,#F5F5F5 0%,#a3a3a3 50%,#F5F5F5 100%);
   --font:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
   --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
   --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:64px;--s9:96px;
