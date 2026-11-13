@@ -111,31 +111,34 @@
   };
 
   function drawD(g, u, c, F, still) {
+    /* D3, decluttered. Grammar: a filled shape is alive at this stage; a thin outline is the record of where it was.
+       Marks (tick, cross) flash while a decision happens, then go quiet; only the caption keeps them.
+       Finished rows recede; one indigo thread follows the fuel story from news in to the alert. */
     var ctx = g.ctx, fg = rgba(c.fg), soft = rgba(c.fg, 0.72), ac = rgba(c.ac), ok = rgba(c.ok), bad = rgba(c.bad), mute = rgba(c.fg, 0.5);
     var R = [44, 126, 200, 290, 376, 468, 551];
     var L = [['news in'], ['same story'], ['relevance', 'filter'], ['claims'], ['linked and', 'scored by code'], ['candidates,', 'web check'], ['published', 'alert']];
-    /* a line is [text, 'ok'|'no']: a mark (indigo tick or red cross) and flat, solid text */
     function caption(lines, y, t0) {
       var k = (still ? 1 : ease((u - t0) / 0.4)) * F; if (k < 0.01) return;
-      ctx.globalAlpha = k; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = rgba(c.card, 0.9);
+      ctx.globalAlpha = k; ctx.lineJoin = 'round';
       ctx.font = '500 ' + 13 * TF + 'px Inter, system-ui, sans-serif';
       for (var q = 0; q < lines.length; q++) {
-        var ln = lines[q], ty = y + q * 18; ctx.strokeStyle = rgba(c.card, 0.9); ctx.lineWidth = 4; ctx.lineCap = 'butt'; 
+        var ln = lines[q], ty = y + q * 18; ctx.strokeStyle = rgba(c.card, 0.9); ctx.lineWidth = 4; ctx.lineCap = 'butt';
         if (ln[1]) {
-          var w = ctx.measureText(ln[0]).width, left = Math.max(8, Math.min(282 - (w + 22) / 2, 432 - 22 - w));
+          var w = ctx.measureText(ln[0]).width, left = Math.max(12, Math.min(282 - (w + 22) / 2, 406 - w));
+          ctx.fillStyle = rgba(c.card, 0.94); g.rr(left - 4, ty - 10, w + 32, 20, 6); ctx.fill();
           ctx.textAlign = 'left'; ctx.strokeText(ln[0], left + 22, ty);
           if (ln[1] === 'ok') g.check(left + 7, ty, ac);
-          else { ctx.strokeStyle = bad; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(left + 2, ty - 5); ctx.lineTo(left + 12, ty + 5); ctx.moveTo(left + 12, ty - 5); ctx.lineTo(left + 2, ty + 5); ctx.stroke(); ctx.lineCap = 'butt'; ctx.strokeStyle = rgba(c.card, 0.9); }
+          else { ctx.strokeStyle = bad; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(left + 2, ty - 5); ctx.lineTo(left + 12, ty + 5); ctx.moveTo(left + 12, ty - 5); ctx.lineTo(left + 2, ty + 5); ctx.stroke(); ctx.lineCap = 'butt'; }
           g.cap(ln[0], left + 22, ty, ac);
         } else {
-          var cw = ctx.measureText(ln[0]).width, cx = Math.max(8 + cw / 2, Math.min(282, 432 - cw / 2));
-          ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeText(ln[0], cx, ty);
+          var cw = ctx.measureText(ln[0]).width, cx = Math.max(14 + cw / 2, Math.min(282, 426 - cw / 2)); ctx.fillStyle = rgba(c.card, 0.94); g.rr(cx - cw / 2 - 6, ty - 10, cw + 12, 20, 6); ctx.fill();
+          ctx.textAlign = 'center'; ctx.strokeText(ln[0], cx, ty);
           g.cap(ln[0], cx, ty, ac, 'center');
         }
       }
       ctx.globalAlpha = 1;
     }
-    var act = still ? 6 : u < 2.6 ? 0 : u < 4.6 ? 1 : u < 8.0 ? 2 : u < 9.6 ? 3 : u < 15.0 ? 4 : u < 17.4 ? 5 : 6;
+    var act = still ? 6 : u < 2.6 ? 0 : u < 4.8 ? 1 : u < 8.0 ? 2 : u < 9.6 ? 3 : u < 15.0 ? 4 : u < 17.4 ? 5 : 6;
     ctx.globalAlpha = F;
     for (var r = 0; r < 7; r++) {
       var on = r === act;
@@ -146,101 +149,156 @@
     g.cap('illustration, not real counts', 424, 18, soft, 'right');
     ctx.globalAlpha = 1;
 
-    /* one shape, drawn as a rounded square rotated by rot: t=0 square, t=1 circle (cornerFrac), or a diamond */
-    function shape(x, y, h, cr, rot) { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); g.rr(-h, -h, 2 * h, 2 * h, cr); ctx.fill(); ctx.restore(); }
-
-    /* symbol for one story: its articles and its family share it */
+    /* ---- drawing helpers ---- */
     function poly(n, rad, a0, inner) {
       var cnt = inner ? n * 2 : n;
       for (var j = 0; j < cnt; j++) { var a = a0 + j * Math.PI * 2 / cnt, q = inner && j % 2 ? rad * inner : rad; if (j) ctx.lineTo(Math.cos(a) * q, Math.sin(a) * q); else ctx.moveTo(Math.cos(a) * q, Math.sin(a) * q); }
       ctx.closePath();
     }
-    function sym(t, x, y, h) {
-      ctx.save(); ctx.translate(x, y); ctx.beginPath();
+    function symPath(t, h) {
+      ctx.beginPath();
       if (t === 0) ctx.rect(-h * 0.9, -h * 0.9, h * 1.8, h * 1.8);
       else if (t === 1) ctx.arc(0, 0, h, 0, 6.283);
       else if (t === 2) poly(3, h * 1.25, -Math.PI / 2);
-      else if (t === 3) { ctx.rect(-h * 0.35, -h, h * 0.7, 2 * h); ctx.rect(-h, -h * 0.35, 2 * h, h * 0.7); }
+      else if (t === 3) { ctx.moveTo(-h * 0.35, -h); ctx.lineTo(h * 0.35, -h); ctx.lineTo(h * 0.35, -h * 0.35); ctx.lineTo(h, -h * 0.35); ctx.lineTo(h, h * 0.35); ctx.lineTo(h * 0.35, h * 0.35); ctx.lineTo(h * 0.35, h); ctx.lineTo(-h * 0.35, h); ctx.lineTo(-h * 0.35, h * 0.35); ctx.lineTo(-h, h * 0.35); ctx.lineTo(-h, -h * 0.35); ctx.lineTo(-h * 0.35, -h * 0.35); ctx.closePath(); }
       else if (t === 4) poly(6, h * 1.05, 0);
       else if (t === 5) poly(5, h * 1.3, -Math.PI / 2, 0.45);
       else if (t === 6) poly(5, h * 1.1, -Math.PI / 2);
-      else if (t === 8) poly(4, h * 1.35, -Math.PI / 2);
       else g.rr(-h * 1.2, -h * 0.6, h * 2.4, h * 1.2, h * 0.6);
-      ctx.fill(); ctx.restore();
     }
-    /* 24 articles about 8 stories. Each story (family) has its own symbol and its copies share it. The display order is
-       scrambled so different symbols sit side by side in "news in". Copies slide to their family and become one larger
-       symbol of the same type. The followed story is family 2 (a triangle: prices up); family 5 is the sponsorship (star). */
-    var SZ = [4, 2, 3, 3, 4, 3, 3, 2], SYM = [0, 1, 2, 3, 4, 5, 6, 7], FX = [], SORT = [], FAMOF = [], FIRST = [-1, -1, -1, -1, -1, -1, -1, -1];
-    var HF = 2, SPON = 5, PASS = { 1: 1, 2: 1, 6: 1 };
+    /* solid (alive) or outline (record) symbol */
+    function sym(t, x, y, h, col, a, outline) {
+      if (a < 0.01) return;
+      ctx.save(); ctx.translate(x, y); ctx.globalAlpha = a * F; symPath(t, h);
+      if (outline) { ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.stroke(); } else { ctx.fillStyle = col; ctx.fill(); }
+      ctx.restore();
+    }
+    function dot(x, y, rad, col, a, outline) {
+      if (a < 0.01) return;
+      ctx.globalAlpha = a * F; ctx.beginPath(); ctx.arc(x, y, rad, 0, 6.283);
+      if (outline) { ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.stroke(); } else { ctx.fillStyle = col; ctx.fill(); }
+    }
+    /* rounded square that turns into a diamond (t=1) */
+    function shape(x, y, h, cr, rot, col, a, outline) {
+      if (a < 0.01) return;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.globalAlpha = a * F; g.rr(-h, -h, 2 * h, 2 * h, cr);
+      if (outline) { ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.stroke(); } else { ctx.fillStyle = col; ctx.fill(); }
+      ctx.restore();
+    }
+    function line(x1, y1, x2, y2, col, a, w) { if (a < 0.01) return; ctx.globalAlpha = a * F; ctx.strokeStyle = col; ctx.lineWidth = w || 1.25; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+    /* a mark that shows for about a second while the decision happens */
+    function flash(t0) { return still ? 0 : clamp((u - t0) / 0.2) * clamp((t0 + 1.5 - u) / 0.3); }
+    /* finished rows recede to 45 % */
+    var DONE = [3.8, 6.0, 9.0, 10.8, 14.9, 17.2, 999];
+    function rec(row) { return still ? (row === 6 ? 1 : 0.45) : 1 - 0.55 * ease((u - DONE[row]) / 0.6); }
+
+    /* ---- the model ---- */
+    var SZ = [4, 2, 3, 3, 4, 3, 3, 2], SYM = [0, 1, 2, 3, 4, 5, 6, 7], FX = [], SORT = [], FAMOF = [], HF = 2, PASS = { 1: 1, 2: 1, 6: 1 };
     for (var f = 0; f < 8; f++) { FX.push(172 + f * 34); for (var k0 = 0; k0 < SZ[f]; k0++) SORT.push(f); }
-    for (var s0 = 0; s0 < 24; s0++) { var fm = SORT[(s0 * 7) % 24]; FAMOF.push(fm); if (FIRST[fm] < 0) FIRST[fm] = s0; }
-    var m1 = still ? 1 : ease((u - 2.6) / 1.2), down = still ? 1 : ease((u - 4.8) / 1.0);
-    var drop = still ? 1 : ease((u - 6.0) / 0.9), split = still ? 1 : clamp((u - 8.0) / 1.0);
-    for (var i = 0; i < 24; i++) {
-      if (still) break;
-      var fi = FAMOF[i], x0 = 160 + (i % 12) * 22, y0 = R[0] - 10 + Math.floor(i / 12) * 20;
-      var ap = clamp((u - i * 0.05) / 0.4), rad = 4 + SZ[fi] * 1.6;
-      var bx = lerp(x0, FX[fi], m1), by = lerp(y0, R[1], m1) + (R[2] - R[1]) * down, bh = lerp(5, rad, m1), al = ap;
-      if (!PASS[fi]) { bx += 40 * drop; al *= 1 - drop; } else { bh *= 1 - 0.7 * split; al *= 1 - split; }
-      if (al < 0.01) continue;
-      ctx.globalAlpha = al * F; ctx.fillStyle = fi === HF ? ac : mute;
-      sym(SYM[fi], bx, by, bh);
-      if (i === FIRST[fi] && fi === HF) { ctx.strokeStyle = ac; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(bx, by, rad + 6, 0, 6.283); ctx.globalAlpha = al * F * m1; ctx.stroke(); }
-      if (i === FIRST[fi] && fi === SPON && u > 6.0) { ctx.globalAlpha = al * F; g.cross(bx, by - 20, bad); }
+    for (var s0 = 0; s0 < 24; s0++) FAMOF.push(SORT[(s0 * 7) % 24]);
+    function ax(i) { return 160 + (i % 12) * 22; }
+    function ay(i) { return R[0] - 10 + Math.floor(i / 12) * 20; }
+    function frad(f) { return 4 + SZ[f] * 1.6; }
+    var m1 = still ? 1 : ease((u - 2.6) / 1.2);        /* copies gather into one story */
+    var dec = still ? 1 : ease((u - 5.0) / 0.8);       /* filter: kept move down, dropped stay as outlines */
+    var split = still ? 1 : clamp((u - 8.0) / 1.0);    /* kept stories hand over to claims */
+    var FAMC = [1, 1, 1, 2, 2, 2, 6, 6, 6], GRP = [1, 1, 0, 0, 0, 0, 0, 2, 2], HEROC = { 3: 1, 4: 1, 5: 1 };
+    var CX = [280, 180, 395], SC = [0.5, 0.4, 0.8, 0.9, 0.7, 0.8, 0.7, 0.25, 0.3], seen = [0, 0, 0], GP = [], RP = [];
+    for (var m = 0; m < 9; m++) { var n = seen[GRP[m]]++, ang = n * 1.25 - 1.9; GP.push([CX[GRP[m]] + Math.cos(ang) * 24, R[4] + Math.sin(ang) * 20]); RP.push([160 + m * 30, R[3]]); }
+    var k1 = still ? 1 : ease((u - 8.0) / 1.0), k2 = still ? 1 : ease((u - 9.6) / 1.2), grow = still ? 1 : clamp((u - 8.0) / 0.6);
+    var l0 = still ? 1 : ease((u - 10.6) / 0.7), scoreK = still ? 1 : ease((u - 11.6) / 0.8);
+    var weak = still ? 1 : ease((u - 13.0) / 0.8), collapse = still ? 1 : ease((u - 14.0) / 0.9);
+    var dec2 = still ? 1 : ease((u - 15.8) / 0.6), rise = still ? 1 : ease((u - 16.6) / 0.8), pk = still ? 1 : ease((u - 17.4) / 0.7);
+
+    /* ---- 1. the thread: the fuel story's path, drawn as it travels ---- */
+    /* every kept story leaves a path: same story -> filter -> each of its claims -> the group that claim joins.
+       The fuel story's path is indigo and goes on to the alert; the other kept stories are thin grey. */
+    if (m1 >= 0.999) {
+      for (var kf = 0; kf < 8; kf++) {
+        if (!PASS[kf]) continue;
+        var hot = kf === HF, lc = hot ? ac : fg, la0 = hot ? 0.55 : 0.28, lw = hot ? 1.25 : 1;
+        if (dec > 0) line(FX[kf], R[1], FX[kf], lerp(R[1], R[2], dec), lc, la0, lw);
+        for (var mc = 0; mc < 9; mc++) {
+          if (FAMC[mc] !== kf) continue;
+          if (k1 > 0) line(FX[kf], R[2], lerp(FX[kf], RP[mc][0], k1), lerp(R[2], RP[mc][1], k1), lc, la0, lw);
+          if (k2 > 0) line(RP[mc][0], RP[mc][1], lerp(RP[mc][0], GP[mc][0], k2), lerp(RP[mc][1], GP[mc][1], k2), lc, la0, lw);
+        }
+      }
+      /* groups that go on: fuel group to its candidate and the alert (indigo), the other group to its candidate (grey) */
+      if (collapse > 0) { line(CX[0], R[4], CX[0], lerp(R[4], R[5], collapse), ac, 0.55); line(CX[1], R[4], CX[1], lerp(R[4], R[5], collapse), fg, 0.28, 1); }
+      if (rise > 0) line(CX[0], R[5], CX[0], lerp(R[5], R[6] - 23, rise), ac, 0.55);
+    }
+
+    /* ---- 2. news in: outlines stay where articles were ---- */
+    for (i = 0; i < 24; i++) {
+      var hf = FAMOF[i] === HF, ap = still ? 1 : clamp((u - i * 0.05) / 0.4), col = hf ? ac : fg;
+      sym(SYM[FAMOF[i]], ax(i), ay(i), 5, col, ap * clamp(m1 * 3) * (hf ? 0.8 : 0.45) * rec(0), true);
+      if (m1 < 0.999) sym(SYM[FAMOF[i]], lerp(ax(i), FX[FAMOF[i]], m1), lerp(ay(i), R[1], m1), lerp(5, frad(FAMOF[i]), m1), hf ? ac : mute, ap, false);
+    }
+    /* ---- 3. same story + filter: dropped stories stay up here as outlines; kept stories move down ---- */
+    for (f = 0; f < 8; f++) {
+      if (m1 < 0.999) break;
+      var hf2 = f === HF, colF = hf2 ? ac : mute, colO = hf2 ? ac : fg;
+      if (!PASS[f]) {
+        sym(SYM[f], FX[f], R[1], frad(f), colF, (1 - dec) * rec(1), false);
+        sym(SYM[f], FX[f], R[1], frad(f), colO, dec * 0.4 * rec(1), true);
+        var fl = flash(5.0); if (fl > 0) { ctx.globalAlpha = fl * F; g.cross(FX[f], R[1], bad); }
+      } else {
+        var fy = lerp(R[1], R[2], dec);
+        sym(SYM[f], FX[f], R[1], frad(f), colO, dec * 0.7 * rec(1), true);                     /* record of where it was */
+        var atF = dec >= 0.999 ? rec(2) : 1;
+        sym(SYM[f], FX[f], fy, frad(f) * (1 - 0.3 * split), colF, (1 - split) * atF, false);  /* alive */
+        sym(SYM[f], FX[f], R[2], frad(f), colO, split * 0.7 * rec(2), true);                     /* record in the filter row */
+        if (hf2) { ctx.globalAlpha = F * (1 - 0.5 * split) * atF; ctx.strokeStyle = ac; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(FX[f], fy, frad(f) + 6, 0, 6.283); ctx.stroke(); }
+      }
     }
     ctx.globalAlpha = 1;
     caption([['different stories, different symbols'], ['follow one: fuel prices rise']], R[0] + 36, 0.8);
     caption([['copies of one story are grouped as one']], R[1] + 26, 3.2);
     caption([['kept: fuel, less money for top-ups', 'ok'], ['dropped: sponsorship, no business impact', 'no']], R[2] + 26, 6.0);
 
-    /* each kept family dot splits into claims (they start inside the dot and move out), the claims join groups by signal,
-       each group then closes up into one candidate diamond, the kept diamond becomes the published alert card */
-    var FAMC = [1, 1, 1, 2, 2, 2, 6, 6, 6], GRP = [1, 1, 0, 0, 0, 0, 0, 2, 2], HEROC = { 3: 1, 4: 1, 5: 1 };
-    var CX = [220, 330, 405], SC = [0.5, 0.4, 0.8, 0.9, 0.7, 0.8, 0.7, 0.25, 0.3], seen = [0, 0, 0], pos = [];
-    var k1 = still ? 1 : ease((u - 8.0) / 1.0), k2 = still ? 1 : ease((u - 9.6) / 1.2);
-    for (var m = 0; m < 9; m++) {
-      var gg = GRP[m], n = seen[gg]++, ang = n * 1.25 - 1.9;
-      var cx = CX[gg] + Math.cos(ang) * 24, cy = R[4] + Math.sin(ang) * 20;
-      pos.push([lerp(lerp(FX[FAMC[m]], 160 + m * 30, k1), cx, k2), lerp(lerp(R[2], R[3], k1), cy, k2)]);
+    /* ---- 4. claims and groups ---- */
+    for (m = 0; m < 9; m++) {
+      var hc = !!HEROC[m];
+      dot(RP[m][0], RP[m][1], 3.5, hc ? ac : fg, clamp(k2 * 3) * (hc ? 0.8 : 0.45) * rec(3), true);     /* claim-row record */
+      if (GRP[m] !== 2) {
+        dot(GP[m][0], GP[m][1], (3.5 + 4 * SC[m] * scoreK), GRP[m] === 0 ? ac : fg, clamp(collapse * 3) * 0.6 * rec(4), true);  /* group record */
+        for (var m3 = m + 1; m3 < 9; m3++) if (GRP[m3] === GRP[m]) line(GP[m][0], GP[m][1], GP[m3][0], GP[m3][1], GRP[m] === 0 ? ac : rgba(c.line), clamp(collapse * 3) * 0.3 * rec(4), 1);
+      }
+    }
+    for (m = 0; m < 9; m++) for (var m2 = m + 1; m2 < 9; m2++) if (GRP[m] === GRP[m2]) {
+      var la = grow * l0 * (GRP[m] === 2 ? (1 - 0.7 * weak) * rec(4) : 1 - collapse);
+      line(GP[m][0] + (1 - k2) * 0, GP[m][1], GP[m2][0], GP[m2][1], GRP[m] === 0 ? rgba(c.ac, 0.8) : rgba(c.line, 0.7), la * (k2 >= 0.999 ? 1 : 0));
+    }
+    for (m = 0; m < 9; m++) {
+      var gc = GRP[m], px = lerp(lerp(FX[FAMC[m]], RP[m][0], k1), GP[m][0], k2), py = lerp(lerp(R[2], RP[m][1], k1), GP[m][1], k2);
+      var tx = gc === 0 ? CX[0] : CX[1], x = gc === 2 ? px : lerp(px, tx, collapse), y = gc === 2 ? py : lerp(py, R[5], collapse);
+      var colC = (HEROC[m] || (gc === 0 && (still || u > 10.8))) ? ac : mute, rr0 = (3.5 + 4 * SC[m] * scoreK) * grow;
+      if (gc === 2) {
+        dot(x, y, rr0, colC, grow * (1 - weak), false);
+        dot(x, y, rr0, fg, weak * 0.4 * rec(4), true);
+        continue;
+      }
+      var a2 = grow;
+      if (gc === 0) { y += (R[6] - R[5]) * rise; a2 *= 1 - pk; }
+      if (gc === 1) a2 *= 1 - dec2;
+      var t = collapse, h = lerp(rr0, 7.8, t);
+      shape(x, y, h, lerp(h, 1.5, t), t * Math.PI / 4, colC, a2, false);
     }
     caption([['kept stories split into claims']], R[3] + 26, 8.4);
-    var collapse = still ? 1 : ease((u - 14.0) / 0.9), weak = still ? 1 : clamp((u - 13.0) / 0.8);
-    var webK = still ? 1 : clamp((u - 15.2) / 0.4), drop2 = still ? 1 : ease((u - 15.8) / 0.6), rise = still ? 1 : ease((u - 16.6) / 0.8);
-    var pk = still ? 1 : ease((u - 17.4) / 0.7);
-    var linkA = still ? 0 : ease((u - 10.6) / 0.7) * (1 - collapse), scoreK = still ? 1 : ease((u - 11.6) / 0.8), grow = still ? 1 : clamp((u - 8.0) / 0.6);
-    if (!still) {
-      for (m = 0; m < 9; m++) for (var m2 = m + 1; m2 < 9; m2++) if (GRP[m] === GRP[m2]) {
-        ctx.globalAlpha = grow * F * linkA * (GRP[m] === 2 ? 1 - weak : 1); ctx.strokeStyle = GRP[m] === 0 ? rgba(c.ac, 0.8) : rgba(c.line, 0.7); ctx.lineWidth = 1.25;
-        ctx.beginPath(); ctx.moveTo(pos[m][0], pos[m][1]); ctx.lineTo(pos[m2][0], pos[m2][1]); ctx.stroke();
-      }
-      for (m = 0; m < 9; m++) {
-        var gc = GRP[m], tx = gc === 0 ? 220 : 340;
-        var x = gc === 2 ? pos[m][0] : lerp(pos[m][0], tx, collapse), y = gc === 2 ? pos[m][1] : lerp(pos[m][1], R[5], collapse);
-        var al2 = grow * F;
-        if (gc === 0) { y += (R[6] - R[5]) * rise; al2 *= 1 - pk; }
-        if (gc === 1) { x += 30 * drop2; al2 *= 1 - drop2; }
-        if (gc === 2) al2 *= 1 - weak;
-        if (al2 < 0.01) continue;
-        var t = gc === 2 ? 0 : collapse, rr0 = (3.5 + 4 * SC[m] * scoreK) * grow, h = lerp(rr0, 7.8, t);
-        ctx.globalAlpha = al2; ctx.fillStyle = (HEROC[m] || (gc === 0 && u > 10.8)) ? ac : mute;
-        shape(x, y, h, lerp(h, 1.5, t), t * Math.PI / 4);
-      }
-      ctx.globalAlpha = 1;
-    }
     caption([['linked with other stories: one stronger signal']], R[4] + 40, 10.8);
     caption([['scored by code; the weak signal drops']], R[4] + 58, 12.4);
 
-    /* web check marks beside the two candidate diamonds */
-    if (!still && collapse > 0.01 && webK > 0) {
-      ctx.globalAlpha = F * webK * (1 - rise); g.check(244, R[5], ok);
-      ctx.globalAlpha = F * webK * (1 - drop2); g.cross(364 + 30 * drop2, R[5], bad); ctx.globalAlpha = 1;
-    }
+    /* ---- 5. candidates: marks flash, the rejected one stays as an outline, the kept one leaves an outline ---- */
+    shape(CX[1], R[5], 7.8, 1.5, Math.PI / 4, fg, dec2 * 0.45 * rec(5), true);
+    shape(CX[0], R[5], 7.8, 1.5, Math.PI / 4, ac, clamp(rise * 3) * 0.8 * rec(5), true);
+    var fw = flash(15.2); if (fw > 0) { ctx.globalAlpha = fw * F; g.check(CX[0] + 24, R[5], ok); g.cross(CX[1] + 24, R[5], bad); }
+    ctx.globalAlpha = 1;
     caption([['kept: outside sources agree', 'ok'], ['dropped: sources do not confirm', 'no']], R[5] + 24, 15.2);
 
-    /* the kept diamond grows into the published alert card, then locks; a follow-up leaves it as sent */
+    /* ---- 6. the kept candidate grows into the published alert, then locks; a follow-up leaves it as sent ---- */
     if (pk > 0.01) {
-      var cl = lerp(209, 150, pk), cw = lerp(22, 274, pk), ct = R[6] - lerp(11, 23, pk), ch = lerp(22, 46, pk), tk = clamp((pk - 0.5) / 0.5);
+      var cl = lerp(CX[0] - 11, 150, pk), cw = lerp(22, 274, pk), ct = R[6] - lerp(11, 23, pk), ch = lerp(22, 46, pk), tk = clamp((pk - 0.5) / 0.5);
       ctx.globalAlpha = F; ctx.fillStyle = rgba(c.card, 0.96); ctx.strokeStyle = ok; ctx.lineWidth = 1.25;
       g.rr(cl, ct, cw, ch, lerp(11, 12, pk)); ctx.fill(); ctx.stroke();
       ctx.globalAlpha = F * tk;
