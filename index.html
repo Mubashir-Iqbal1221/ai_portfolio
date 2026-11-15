@@ -44,17 +44,16 @@
       </div>
     </div>
     <div class="hero-graph" id="hero-graph" role="img" aria-label="Illustration of how I start work: a request arrives, such as a slow process or a new idea. Questions turn it into one result we can measure. Then we agree the balance of cost, speed and accuracy, and choose the simplest approach that meets the goal: rules, a model, or an agent."><canvas id="hero-canvas" aria-hidden="true"></canvas><span class="graph-cap" aria-hidden="true">How I approach any problem</span></div>
-    <!-- STATS: provisional values from docs/baseline/site_content.md (proof_strip); the owner will review the numbers later -->
     <div class="stats">
-      <div class="stat"><b>F1 0.88</b><p>Relevancy gate, 132 labelled events, half synthetic</p></div>
-      <div class="stat"><b>73 to 100<span>%</span></b><p>Claim-pair accuracy after prompt rewrite, 40 synthetic pairs</p></div>
-      <div class="stat"><b>4 streams</b><p>Stable at 2 fps each, throughput test only</p></div>
-      <div class="stat"><b>2+ years</b><p>Working on LLM pipelines, agents and edge vision</p></div>
-      </div>
+      <div class="stat"><b>Benchmarks first</b><p>Test sets I build and label, so each change can be re-scored</p></div>
+      <div class="stat"><b>Edge to cloud</b><p>Models on NVIDIA Jetson, services on Google Cloud</p></div>
+      <div class="stat"><b>Led the design</b><p>Of an AI service, with two engineers building it</p></div>
+      <div class="stat"><b>2.5+ years</b><p>Promoted to mid-level ML engineer at RedBuffer</p></div>
+    </div>
   </section>
 
   <section id="work" class="block">
-    <div class="sec-head rv"><h2>Five systems I have worked on.</h2><p>Agents and edge vision.</p></div>
+    <div class="sec-head rv"><h2>Six systems I have worked on.</h2><p>LLM agents, vision and data pipelines.</p></div>
     <div class="work-list">
       <!-- PROJECT 01: copy this block to add a project; set is-link and the stretch link only when a case page exists -->
       <article class="card project rv is-link">
@@ -80,12 +79,12 @@
       </article>
       <!-- PROJECT 03: copy this block to add a project; set is-link and the stretch link only when a case page exists -->
       <article class="card project rv">
-        <div class="badge"><b>No card</b><span>pupillary distance from a photo</span></div>
+        <div class="badge"><b>F1 74 to 86</b><span>face shape, small dataset</span></div>
         <div>
           <p class="p-meta">Retail · computer vision</p>
           <h3>Eyewear recommendation</h3>
           <p class="p-lede">Recommends eyewear from a photo: face shape, age and skin tone, plus pupillary distance with no card held to the face. Clinics usually do that by hand.</p>
-          <ul class="tags" aria-label="Tools"><li>PyTorch</li><li>MediaPipe</li><li>FastAPI</li></ul>
+          <ul class="tags" aria-label="Tools"><li>PyTorch</li><li>DenseNet-121</li><li>MediaPipe</li><li>FastAPI</li></ul>
           
         </div>
       </article>
@@ -109,6 +108,16 @@
           <p class="p-lede">Researches a topic on the web, then streams a source-grounded draft. A reference build for a web-data API.</p>
           <ul class="tags" aria-label="Tools"><li>FastAPI</li><li>WebSockets</li><li>OpenAI SDK</li><li>Olostep</li></ul>
           
+        </div>
+      </article>
+      <!-- PROJECT 06: copy this block to add a project; set is-link and the stretch link only when a case page exists -->
+      <article class="card project rv">
+        <div class="badge"><b>3 anomaly types</b><span>rule-based, month over month</span></div>
+        <div>
+          <p class="p-meta">Royalty data · data pipeline</p>
+          <h3>Royalty payment checks for an oil and gas owner</h3>
+          <p class="p-lede">Checks monthly royalty files from oil and gas operators for payments that do not add up. I built the anomaly detection and optimised the pipeline.</p>
+          <ul class="tags" aria-label="Tools"><li>Python</li><li>pandas</li><li>Parquet</li><li>FastAPI</li></ul>
         </div>
       </article>
     </div>

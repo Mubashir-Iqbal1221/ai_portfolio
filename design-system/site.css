@@ -107,7 +107,7 @@ h1,h2,h3{font-weight:600;letter-spacing:-.025em;color:var(--strong);text-wrap:ba
 .hero-graph canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .graph-cap{position:absolute;left:0;bottom:0;padding:2px var(--s2);font-family:var(--mono);font-size:var(--step-0);color:var(--muted);background:var(--glass);border-radius:var(--s1)}
 .stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s6);margin-top:var(--s5);padding-top:var(--s6);border-top:1px solid var(--line)}
-.stat b{display:block;font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1.1;color:var(--strong)}
+.stat b{display:block;font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.1;color:var(--strong)}
 .stat b span{color:var(--accent-fill)}
 html[data-mode="light"] .stat b span{color:var(--accent)}
 .stat p{margin-top:var(--s2);font-size:var(--step-1);line-height:1.45;color:var(--muted)}
