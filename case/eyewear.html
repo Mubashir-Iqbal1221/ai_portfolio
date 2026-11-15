@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Glasses fitted from a live photo | Mubashir Iqbal</title>
-<meta name="description" content="Eyewear measurement and frame recommendations from a live photo, with no clinic visit and no card held to the face. Face-shape F1 improved from 74 to 86 on a small dataset.">
+<meta name="description" content="Eyewear measurement and frame recommendations from a live photo, with no clinic visit and no card held to the face. Face-shape F1 improved from 74 to 86 on a balanced test set.">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Glasses fitted from a live photo | Mubashir Iqbal">
-<meta property="og:description" content="Eyewear measurement and frame recommendations from a live photo, with no clinic visit and no card held to the face. Face-shape F1 improved from 74 to 86 on a small dataset.">
+<meta property="og:description" content="Eyewear measurement and frame recommendations from a live photo, with no clinic visit and no card held to the face. Face-shape F1 improved from 74 to 86 on a balanced test set.">
 <script>try{var m=localStorage.getItem("mode");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-mode",m)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,9 +34,9 @@
   <p><strong>At a glance</strong></p>
   <ul>
     <li><strong>Client:</strong> an eyewear business</li>
-    <li><strong>My role:</strong> trained the face-shape model and added gaze tracking. With my team, built the pupillary distance measurement.</li>
-    <li><strong>Result:</strong> face-shape F1 from 74 to 86, on a small dataset</li>
-    <li><strong>Stack:</strong> PyTorch, DenseNet-121, MediaPipe, FastAPI</li>
+    <li><strong>My role:</strong> trained the face-shape model, added gaze tracking, and deployed the service on Google Cloud. With my team, built the pupillary distance measurement.</li>
+    <li><strong>Result:</strong> face-shape F1 from 74 to 86, on a balanced test set</li>
+    <li><strong>Stack:</strong> PyTorch, DenseNet-121, MediaPipe, FastAPI, Google Cloud, CI/CD</li>
   </ul>
 
   <h2>The problem</h2>
@@ -46,15 +46,16 @@
   <ul>
     <li><strong>Measurement with no reference object.</strong> Our team measured pupillary distance from one live image, with nothing held to the face.</li>
     <li><strong>Gaze tracking first.</strong> A measurement is only as good as the photo. I added gaze tracking, so the system checks that the person is well placed and looking at the camera before it measures.</li>
-    <li><strong>A face-shape model from little data.</strong> Labelled data was scarce. Through data preprocessing and model optimisation, the DenseNet-121 classifier went from F1 74 to 86.</li>
-    <li><strong>Recommendations from several features.</strong> Face shape, age range, gender and skin tone together decide which frames are suggested.</li>
+    <li><strong>A face-shape model from uneven data.</strong> The images came from two sources, one balanced and one heavily skewed, where the rarest shape had about one image for every eight of the most common. I cropped the faces, augmented every class, and cleaned labels where neighbouring shapes such as oval and oblong were easy to confuse. A class-weighted focal loss then gave rare shapes more weight and focused training on the hard cases. The DenseNet-121 classifier went from F1 74 to 86.</li>
+    <li><strong>Recommendations from several features.</strong> Pretrained models estimate age range, gender and skin tone. Together with face shape, they decide which frames are suggested.</li>
+    <li><strong>Shipped on Google Cloud.</strong> I deployed the service through a CI/CD pipeline and configured the load balancer in front of it.</li>
   </ul>
 
   <h2>Results</h2>
   <div class="tablewrap"><table class="d-table">
     <thead><tr><th scope="col">Metric</th><th scope="col">Baseline</th><th scope="col">Result</th><th scope="col">How measured</th></tr></thead>
     <tbody>
-      <tr><th scope="row">Face-shape F1</th><td>74</td><td>86</td><td>Held-out test set from a small dataset</td></tr>
+      <tr><th scope="row">Face-shape F1</th><td>74</td><td>86</td><td>Balanced held-out test set, about 360 images per shape</td></tr>
     </tbody>
   </table></div>
   <p>The full flow was also tested with real users, by our team and by the client.</p>
