@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VISTOS: event detection on camera streams on NVIDIA Jetson | Mubashir Iqbal</title>
-<meta name="description" content="How a camera safety-monitoring pipeline was benchmarked on NVIDIA Jetson: 4 streams at 2 fps and 8 streams at 1 fps run stable at a 0.889 throughput ratio.">
+<title>VISTOS: fall and fight detection on edge devices | Mubashir Iqbal</title>
+<meta name="description" content="Fall and fight detection on an NVIDIA Jetson, with an agent that answers operator questions about past events by voice or text. 4 camera streams, stable at 2 fps each, in a throughput test.">
 <meta property="og:type" content="article">
-<meta property="og:title" content="VISTOS: event detection on camera streams on NVIDIA Jetson | Mubashir Iqbal">
-<meta property="og:description" content="How a camera safety-monitoring pipeline was benchmarked on NVIDIA Jetson: 4 streams at 2 fps and 8 streams at 1 fps run stable at a 0.889 throughput ratio.">
+<meta property="og:title" content="VISTOS: fall and fight detection on edge devices | Mubashir Iqbal">
+<meta property="og:description" content="Fall and fight detection on an NVIDIA Jetson, with an agent that answers operator questions about past events by voice or text. 4 camera streams, stable at 2 fps each, in a throughput test.">
 <script>try{var m=localStorage.getItem("mode");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-mode",m)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,34 +28,35 @@
 </header>
 <main id="main" class="prose-wrap">
   <p class="post-meta">Case study · 2026</p>
-  <h1>VISTOS: finding events on camera streams, on one Jetson</h1>
-  <p>VISTOS spots falls and fights on camera streams and runs on an NVIDIA Jetson. I worked on the Jetson and DeepStream pipeline and trained its vision model.</p>
+  <h1>Fall and fight detection on edge devices</h1>
+  <p>Staff cannot watch every camera all the time, and falls and fights need attention fast. This system watches live camera feeds on a device at the site, flags those events, and lets operators ask about past events in plain words, by voice or text.</p>
 
-  <h2>What it does</h2>
+  <p><strong>At a glance</strong></p>
   <ul>
-    <li>Filters early: frames with no people are skipped before the costly steps.</li>
-    <li>Flags falls and fights from body overlap and pose-landmark movement.</li>
-    <li>An event engine removes repeats and saves clips for operators.</li>
+    <li><strong>Client:</strong> a secure facility</li>
+    <li><strong>My role:</strong> worked across both services. I built the operator agent over the event database, and worked on deployment and the vision pipeline on the Jetson.</li>
+    <li><strong>Result:</strong> 4 camera streams, stable at 2 fps each, in a throughput test</li>
+    <li><strong>Stack:</strong> NVIDIA Jetson, DeepStream, YOLO, ByteTrack, Python, Docker</li>
   </ul>
-  <figure class="p-fig">
-    <ol class="flow"><li>Camera streams</li><li>Pre-filter (tamper, YOLO pose, tracking)</li><li>Event engine</li><li>Clips and dashboard</li></ol>
-  </figure>
 
-  <h2>How it ran</h2>
-  <div class="bars" role="group" aria-label="Throughput ratio by streams and frames per second">
-    <div class="bar limited"><span>1 stream, 8 fps</span><i style="width:36%"></i><span>0.361, limited</span></div>
-    <div class="bar limited"><span>2 streams, 6 fps</span><i style="width:47%"></i><span>0.470, limited</span></div>
-    <div class="bar limited"><span>3 streams, 4 fps</span><i style="width:65%"></i><span>0.650, limited</span></div>
-    <div class="bar"><span>4 streams, 2 fps</span><i style="width:89%"></i><span>0.889, stable</span></div>
-    <div class="bar"><span>8 streams, 1 fps</span><i style="width:89%"></i><span>0.889, stable</span></div>
-  </div>
-  <p>Benchmark on the repository's runner: 20 s warm-up, 45 s measured, 2 repeats.</p>
+  <h2>The problem</h2>
+  <p>Staff cannot watch every camera all the time, and a fall or a fight needs a response within moments. Once an event is flagged, operators need a fast way to find out what happened, without scrubbing through hours of footage.</p>
 
-  <h2>Worth flagging</h2>
+  <h2>What we built</h2>
   <ul>
-    <li>This measures throughput only. How often events are detected correctly is not reported here.</li>
-    <li>Stable runs top out at 0.889, so "stable" is the pass mark, not a ratio of 1.0.</li>
+    <li><strong>Detection on the device.</strong> We run a YOLO model inside a DeepStream pipeline on an NVIDIA Jetson. ByteTrack follows each person between frames, and rules over body overlap and pose movement flag falls and fights. Each event saves a short clip.</li>
+    <li><strong>An agent over the event database.</strong> I built the agent operators use to ask questions by voice or text, such as how many incidents happened this week. It answers in plain words and can draw graphs.</li>
+    <li><strong>Long conversations that stay on track.</strong> I added context compaction, so the agent condenses older parts of a conversation and keeps the thread.</li>
+    <li><strong>Deployment on site.</strong> The device runs the services with Docker Compose, and a tunnel connects it to a cloud-hosted frontend.</li>
   </ul>
+
+  <h2>Results</h2>
+  <div class="tablewrap"><table class="d-table">
+    <thead><tr><th scope="col">Metric</th><th scope="col">Result</th><th scope="col">How measured</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Camera streams</th><td>4, stable at 2 fps each</td><td>Throughput test on the device</td></tr>
+    </tbody>
+  </table></div>
 
   <p class="post-meta">Code is private. Email me for a walkthrough: <a href="mailto:mubashiriqbal1221@gmail.com">mubashiriqbal1221@gmail.com</a>. <a href="../index.html#work">Back to all work</a></p>
 </main>

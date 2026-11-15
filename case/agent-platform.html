@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agents under each organisation's control | Mubashir Iqbal</title>
+<meta name="description" content="A platform that gives many organisations AI agents that act in their own tools, with each organisation setting who can use what and which words are blocked.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agents under each organisation's control | Mubashir Iqbal">
+<meta property="og:description" content="A platform that gives many organisations AI agents that act in their own tools, with each organisation setting who can use what and which words are blocked.">
+<script>try{var m=localStorage.getItem("mode");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-mode",m)}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B0C10'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23818CF8' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../design-system/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="pill">
+  <a class="brand" href="../index.html" aria-label="Mubashir Iqbal"><i></i><span>Mubashir Iqbal</span></a>
+  <nav class="links" aria-label="Primary"><a href="../#work" data-nav="work">Work</a><a href="../#stack" data-nav="stack">Stack</a><a href="../#about" data-nav="about">About</a><a href="../#contact" data-nav="contact">Contact</a></nav>
+  <span class="sep nav-sep"></span>
+  
+  <button class="icon-btn" id="theme" type="button" aria-pressed="false" aria-label="Switch to light mode" title="Switch theme"><svg class="ico sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7L7 17M17 7l1.7-1.7"/></svg><svg class="ico moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg></button>
+  <a class="pill-cta" href="mailto:mubashiriqbal1221@gmail.com">Email me</a>
+</header>
+<main id="main" class="prose-wrap">
+  <p class="post-meta">Case study · 2026</p>
+  <h1>Agents under each organisation's control</h1>
+  <p>Agents are only useful if they can act in a company's own tools, such as Slack, Gmail, OneDrive or a database, and companies only allow that if they stay in control. This platform serves many organisations at once, and each one decides who can use which tools and which words its people should never type.</p>
+
+  <p><strong>At a glance</strong></p>
+  <ul>
+    <li><strong>Product:</strong> a workflow automation platform for many organisations at once</li>
+    <li><strong>My role:</strong> built the agents, their memory and orchestration, the MCP tools, role-based access to those tools, live content checks per organisation, and the Keycloak sign-in setup</li>
+    <li><strong>Stack:</strong> Python, OpenAI Agents SDK, MCP, Keycloak, Presidio, WebSockets</li>
+  </ul>
+
+  <h2>The problem</h2>
+  <p>Companies want agents that can act through the tools they already use. Before they let one in, they need control: who may use which tool, what must never leave the company, and what their people should not type. On a platform shared by many organisations, each one needs that control over its own users, without affecting anyone else. And every connected tool adds to the model's context, so with many tools connected, most of that space goes to tools the task never uses.</p>
+
+  <h2>What I built and decided</h2>
+  <ul>
+    <li><strong>The agents, their memory and orchestration.</strong> I built the agents that plan a task, call the right tools and keep track of the conversation.</li>
+    <li><strong>Tools, with access by role.</strong> I built the MCP servers that connect each tool, and each role sees only the tools it is allowed to use. Users add or remove tools as they need them, within those limits.</li>
+    <li><strong>Live checks, set per organisation.</strong> As a user types, a checker flags profanity on the spot. Each organisation adds its own blocked words, such as internal code names, and the list applies only to its own users.</li>
+    <li><strong>Sign-in and roles.</strong> I set up Keycloak for sign-in and roles across the platform.</li>
+    <li><strong>Tools loaded only when picked.</strong> We made agents discover the connected tools at runtime and load only the ones a task needs, which keeps the context small.</li>
+    <li><strong>Safety layers.</strong> We added guardrails, masking of personal data with Presidio before it reaches the model, and a fact-checker that flags contradictions between sources instead of hiding them.</li>
+  </ul>
+
+  <p class="post-meta">Code is private. Email me for a walkthrough: <a href="mailto:mubashiriqbal1221@gmail.com">mubashiriqbal1221@gmail.com</a>. <a href="../index.html#work">Back to all work</a></p>
+</main>
+<script>
+(function(){var b=document.getElementById('theme'),h=document.documentElement;function s(){var l=h.getAttribute('data-mode')==='light';b.setAttribute('aria-pressed',l?'true':'false');b.setAttribute('aria-label',l?'Switch to dark mode':'Switch to light mode')}s();b.addEventListener('click',function(){var l=h.getAttribute('data-mode')!=='light';h.setAttribute('data-mode',l?'light':'dark');try{localStorage.setItem('mode',l?'light':'dark')}catch(e){}s()})})();
+</script>
+</body>
+</html>

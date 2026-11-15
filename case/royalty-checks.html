@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Royalty payment checks for an oil and gas owner | Mubashir Iqbal</title>
+<meta name="description" content="A pipeline that reads monthly royalty files from oil and gas operators and flags month-over-month changes that do not add up, using three rule-based anomaly types.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Royalty payment checks for an oil and gas owner | Mubashir Iqbal">
+<meta property="og:description" content="A pipeline that reads monthly royalty files from oil and gas operators and flags month-over-month changes that do not add up, using three rule-based anomaly types.">
+<script>try{var m=localStorage.getItem("mode");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-mode",m)}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B0C10'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23818CF8' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../design-system/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="pill">
+  <a class="brand" href="../index.html" aria-label="Mubashir Iqbal"><i></i><span>Mubashir Iqbal</span></a>
+  <nav class="links" aria-label="Primary"><a href="../#work" data-nav="work">Work</a><a href="../#stack" data-nav="stack">Stack</a><a href="../#about" data-nav="about">About</a><a href="../#contact" data-nav="contact">Contact</a></nav>
+  <span class="sep nav-sep"></span>
+  
+  <button class="icon-btn" id="theme" type="button" aria-pressed="false" aria-label="Switch to light mode" title="Switch theme"><svg class="ico sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7L7 17M17 7l1.7-1.7"/></svg><svg class="ico moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg></button>
+  <a class="pill-cta" href="mailto:mubashiriqbal1221@gmail.com">Email me</a>
+</header>
+<main id="main" class="prose-wrap">
+  <p class="post-meta">Case study · 2026</p>
+  <h1>Royalty payment checks for an oil and gas owner</h1>
+  <p>An oil and gas royalty owner receives payment files from operators every month and could not easily tell whether it had been paid correctly. The pipeline reads those files, checks them, and flags changes from one month to the next that do not add up. I built the anomaly detection and optimised the pipeline.</p>
+
+  <p><strong>At a glance</strong></p>
+  <ul>
+    <li><strong>Client:</strong> an oil and gas royalty owner</li>
+    <li><strong>My role:</strong> built the cross-month anomaly detection, moved the pipeline's working files to Parquet, and optimised the pipeline.</li>
+    <li><strong>Result:</strong> three rule-based anomaly types, with adjustable thresholds</li>
+    <li><strong>Stack:</strong> Python, pandas, Parquet, FastAPI</li>
+  </ul>
+
+  <h2>The problem</h2>
+  <p>Operators send royalty data as fixed-width files, each in its own format. The data is large and arrives every month, and the errors that matter are easy to miss by hand: revenue that changes while volume does not, a property that quietly stops paying, or a change in the owner's share that shifts revenue.</p>
+
+  <h2>What I built and decided</h2>
+  <p>Each file is read, checked record by record, converted, and its totals cross-checked, for two operators' formats. On top of that:</p>
+  <ul>
+    <li><strong>Three kinds of anomaly, compared across months:</strong>
+      <ul>
+        <li>Revenue that moves without a matching change in volume, or the reverse.</li>
+        <li>Properties that drop to zero, disappear, or appear for the first time.</li>
+        <li>Revenue that changes alongside a change in the owner's share.</li>
+      </ul>
+    </li>
+    <li><strong>Rules, not a model.</strong> Every flag can be explained to the person checking payments, and thresholds can be adjusted without retraining anything.</li>
+    <li><strong>January compared with the right month.</strong> January is checked against the previous December, so the year boundary does not break the comparison.</li>
+    <li><strong>Parquet instead of CSV.</strong> The pipeline's working files moved to Parquet, read and written in chunks, so large months are processed in pieces.</li>
+  </ul>
+
+  <p class="post-meta">Code is private. Email me for a walkthrough: <a href="mailto:mubashiriqbal1221@gmail.com">mubashiriqbal1221@gmail.com</a>. <a href="../index.html#work">Back to all work</a></p>
+</main>
+<script>
+(function(){var b=document.getElementById('theme'),h=document.documentElement;function s(){var l=h.getAttribute('data-mode')==='light';b.setAttribute('aria-pressed',l?'true':'false');b.setAttribute('aria-label',l?'Switch to dark mode':'Switch to light mode')}s();b.addEventListener('click',function(){var l=h.getAttribute('data-mode')!=='light';h.setAttribute('data-mode',l?'light':'dark');try{localStorage.setItem('mode',l?'light':'dark')}catch(e){}s()})})();
+</script>
+</body>
+</html>
