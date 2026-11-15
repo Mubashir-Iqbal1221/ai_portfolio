@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VISTOS: fall and fight detection on edge devices | Mubashir Iqbal</title>
-<meta name="description" content="Fall and fight detection on an NVIDIA Jetson, with an agent that answers operator questions about past events by voice or text. 4 camera streams, stable at 2 fps each, in a throughput test.">
+<title>VISTOS: Safety alerts on edge devices, and an agent to question them | Mubashir Iqbal</title>
+<meta name="description" content="Safety alerts for violence, falls and intrusions on an NVIDIA Jetson, with an agent that lets operators question the data by voice or text. 4 camera streams, stable at 2 fps each, in a benchmark on one test video.">
 <meta property="og:type" content="article">
-<meta property="og:title" content="VISTOS: fall and fight detection on edge devices | Mubashir Iqbal">
-<meta property="og:description" content="Fall and fight detection on an NVIDIA Jetson, with an agent that answers operator questions about past events by voice or text. 4 camera streams, stable at 2 fps each, in a throughput test.">
+<meta property="og:title" content="VISTOS: Safety alerts on edge devices, and an agent to question them | Mubashir Iqbal">
+<meta property="og:description" content="Safety alerts for violence, falls and intrusions on an NVIDIA Jetson, with an agent that lets operators question the data by voice or text. 4 camera streams, stable at 2 fps each, in a benchmark on one test video.">
 <script>try{var m=localStorage.getItem("mode");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-mode",m)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,33 +28,36 @@
 </header>
 <main id="main" class="prose-wrap">
   <p class="post-meta">Case study · 2026</p>
-  <h1>Fall and fight detection on edge devices</h1>
-  <p>Staff cannot watch every camera all the time, and falls and fights need attention fast. This system watches live camera feeds on a device at the site, flags those events, and lets operators ask about past events in plain words, by voice or text.</p>
+  <h1>Safety alerts on edge devices, and an agent to question them</h1>
+  <p>A facility has many cameras and few people watching them. We delivered the first version of a system that watches camera feeds on an edge device, flags violence, falls and intrusions, and lets operators ask about any event in plain words, by voice or text.</p>
 
   <p><strong>At a glance</strong></p>
   <ul>
     <li><strong>Client:</strong> a secure facility</li>
-    <li><strong>My role:</strong> worked across both services. I built the operator agent over the event database, and worked on deployment and the vision pipeline on the Jetson.</li>
-    <li><strong>Result:</strong> 4 camera streams, stable at 2 fps each, in a throughput test</li>
-    <li><strong>Stack:</strong> NVIDIA Jetson, DeepStream, YOLO, ByteTrack, Python, Docker</li>
+    <li><strong>Scope:</strong> first version, delivered and deployed</li>
+    <li><strong>My role:</strong> built the operator agent over the event database, configured the Jetson and its network access, and helped shape the vision pipeline's design</li>
+    <li><strong>Result:</strong> 4 camera streams, stable at 2 fps each, in a throughput benchmark on the Jetson</li>
+    <li><strong>Stack:</strong> NVIDIA Jetson, DeepStream, YOLOv8, Google ADK, Gemini, LiteLLM, MCP Toolbox, PostgreSQL, Tailscale, Docker</li>
   </ul>
 
   <h2>The problem</h2>
-  <p>Staff cannot watch every camera all the time, and a fall or a fight needs a response within moments. Once an event is flagged, operators need a fast way to find out what happened, without scrubbing through hours of footage.</p>
+  <p>A fight or a fall needs a response within moments, but running a large model on every frame of every camera is too slow and too costly for a device on site. Once an event is flagged, operators also need answers fast, without scrubbing through footage or writing SQL.</p>
 
   <h2>What we built</h2>
   <ul>
-    <li><strong>Detection on the device.</strong> We run a YOLO model inside a DeepStream pipeline on an NVIDIA Jetson. ByteTrack follows each person between frames, and rules over body overlap and pose movement flag falls and fights. Each event saves a short clip.</li>
-    <li><strong>An agent over the event database.</strong> I built the agent operators use to ask questions by voice or text, such as how many incidents happened this week. It answers in plain words and can draw graphs.</li>
-    <li><strong>Long conversations that stay on track.</strong> I added context compaction, so the agent condenses older parts of a conversation and keeps the thread.</li>
-    <li><strong>Deployment on site.</strong> The device runs the services with Docker Compose, and a tunnel connects it to a cloud-hosted frontend.</li>
+    <li><strong>A funnel from cheap checks to costly ones.</strong> Each camera is sampled down to a few frames per second. Quick checks catch camera tampering, frames with nobody in them stop at person detection, and pose and motion give each frame an anomaly score. Only high-scoring frames go to a vision-language model, so most frames never reach the costly step.</li>
+    <li><strong>Detection on the Jetson.</strong> We run YOLOv8 inside an NVIDIA DeepStream pipeline on the device. Each event saves a clip from 5 seconds before to 5 seconds after, as evidence.</li>
+    <li><strong>An agent operators can question.</strong> I built the agent operators use to ask questions such as how many falls happened at a site this week. It answers by text or voice, draws charts, and writes an incident report for each event.</li>
+    <li><strong>Open questions, without open access.</strong> Operators ask questions nobody can list in advance, so a fixed set of predefined queries would not cover them, and the agent writes its own SQL. To keep that safe without relying on the prompt, I created a database user with only the access we chose to expose, and the agent's database toolbox connects through that user alone. Row-level security then limits every query to the user's own organisation and sites.</li>
+    <li><strong>Sessions that pick up where they left off.</strong> Conversations are saved, and a voice session resumes from a cleaned, trimmed history, so old audio and tool output cannot confuse the model.</li>
+    <li><strong>The device, connected.</strong> I configured the Jetson, connected its services, and set up secure network access to it with Tailscale.</li>
   </ul>
 
   <h2>Results</h2>
   <div class="tablewrap"><table class="d-table">
     <thead><tr><th scope="col">Metric</th><th scope="col">Result</th><th scope="col">How measured</th></tr></thead>
     <tbody>
-      <tr><th scope="row">Camera streams</th><td>4, stable at 2 fps each</td><td>Throughput test on the device</td></tr>
+      <tr><th scope="row">Camera streams</th><td>4, stable at 2 fps each</td><td>Throughput benchmark on the Jetson, one test video</td></tr>
     </tbody>
   </table></div>
 
