@@ -37,7 +37,7 @@
     </div>
     <div class="hero-copy">
       <p class="say"><b>I build</b> <span id="rot" data-lines='[&quot;AI that holds up past the demo&quot;, &quot;agents that flag problems, not hide them&quot;, &quot;systems whose results you can audit&quot;, &quot;vision models that run on edge devices&quot;, &quot;data pipelines that spot anomalies early&quot;, &quot;benchmarks before I trust a model&quot;]'>AI that holds up past the demo</span></p>
-      <p class="lede">At RedBuffer: <strong>tool use over MCP</strong>, guardrails, a relevancy gate with a benchmark, and <strong>DeepStream on a Jetson</strong>.</p>
+      <p class="lede">At RedBuffer, I work on <strong>LLM agents</strong>, <strong>vision models on edge devices</strong> and <strong>data pipelines</strong>, from the first question to deployment.</p>
       <div class="cta">
         <a class="btn primary" href="mailto:mubashiriqbal1221@gmail.com">Email me</a>
         <a class="btn ghost" href="#work">See the work <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
@@ -72,45 +72,34 @@
         <div>
           <p class="p-meta">Safety monitoring · edge vision</p>
           <h3><a class="stretch" href="case/edge-vision.html">VISTOS</a></h3>
-          <p class="p-lede">Spots falls and fights on camera streams on an NVIDIA Jetson. Each event saves a short clip for operators.</p>
+          <p class="p-lede">Spots falls and fights in live camera feeds on an NVIDIA Jetson, and lets operators ask about past events by voice or text.</p>
           <ul class="tags" aria-label="Tools"><li>DeepStream</li><li>YOLO</li><li>ByteTrack</li><li>Docker</li></ul>
           <span class="more">Case study <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
         </div>
       </article>
       <!-- PROJECT 03: copy this block to add a project; set is-link and the stretch link only when a case page exists -->
       <article class="card project rv">
-        <div class="badge"><b>F1 74 to 86</b><span>face shape, small dataset</span></div>
+        <div class="badge"><b>MCP</b><span>tools load only when picked</span></div>
         <div>
-          <p class="p-meta">Retail · computer vision</p>
-          <h3>Eyewear recommendation</h3>
-          <p class="p-lede">Recommends eyewear from a photo: face shape, age and skin tone, plus pupillary distance with no card held to the face. Clinics usually do that by hand.</p>
-          <ul class="tags" aria-label="Tools"><li>PyTorch</li><li>DenseNet-121</li><li>MediaPipe</li><li>FastAPI</li></ul>
+          <p class="p-meta">Agentic AI · guardrails</p>
+          <h3>Agent platform with MCP</h3>
+          <p class="p-lede">Agents that use the tools a user connects, loading only what each task needs, with a fact-checker that flags contradictions.</p>
+          <ul class="tags" aria-label="Tools"><li>MCP</li><li>Agents</li><li>Guardrails</li><li>Python</li></ul>
           
         </div>
       </article>
       <!-- PROJECT 04: copy this block to add a project; set is-link and the stretch link only when a case page exists -->
       <article class="card project rv">
-        <div class="badge"><b>MCP</b><span>tools load only when picked</span></div>
+        <div class="badge"><b>F1 74 to 86</b><span>face shape, small dataset</span></div>
         <div>
-          <p class="p-meta">Agentic AI · guardrails</p>
-          <h3>Agent platform with MCP</h3>
-          <p class="p-lede">Agents that use the tools a user connects over MCP, with a fact-checker that flags contradictions. Tools load only when picked, which saves context.</p>
-          <ul class="tags" aria-label="Tools"><li>MCP</li><li>Agents</li><li>Guardrails</li><li>Python</li></ul>
+          <p class="p-meta">Retail · computer vision</p>
+          <h3>Eyewear recommendation</h3>
+          <p class="p-lede">Measures people for glasses from a live photo, with no clinic visit and no card held to the face. I trained the face-shape model behind the frame picks.</p>
+          <ul class="tags" aria-label="Tools"><li>PyTorch</li><li>DenseNet-121</li><li>MediaPipe</li><li>FastAPI</li></ul>
           
         </div>
       </article>
       <!-- PROJECT 05: copy this block to add a project; set is-link and the stretch link only when a case page exists -->
-      <article class="card project rv">
-        <div class="badge"><b>Reference</b><span>build for a web-data API</span></div>
-        <div>
-          <p class="p-meta">Content · research agent</p>
-          <h3>Blog Writing Agent</h3>
-          <p class="p-lede">Researches a topic on the web, then streams a source-grounded draft. A reference build for a web-data API.</p>
-          <ul class="tags" aria-label="Tools"><li>FastAPI</li><li>WebSockets</li><li>OpenAI SDK</li><li>Olostep</li></ul>
-          
-        </div>
-      </article>
-      <!-- PROJECT 06: copy this block to add a project; set is-link and the stretch link only when a case page exists -->
       <article class="card project rv">
         <div class="badge"><b>3 anomaly types</b><span>rule-based, month over month</span></div>
         <div>
@@ -118,6 +107,17 @@
           <h3>Royalty payment checks for an oil and gas owner</h3>
           <p class="p-lede">Checks monthly royalty files from oil and gas operators for payments that do not add up. I built the anomaly detection and optimised the pipeline.</p>
           <ul class="tags" aria-label="Tools"><li>Python</li><li>pandas</li><li>Parquet</li><li>FastAPI</li></ul>
+        </div>
+      </article>
+      <!-- PROJECT 06: copy this block to add a project; set is-link and the stretch link only when a case page exists -->
+      <article class="card project rv">
+        <div class="badge"><b>Reference</b><span>build for a web-data API</span></div>
+        <div>
+          <p class="p-meta">Content · research agent</p>
+          <h3>Blog Writing Agent</h3>
+          <p class="p-lede">Researches a topic on the web, then streams a draft that cites its sources. A reference build for a web-data API.</p>
+          <ul class="tags" aria-label="Tools"><li>FastAPI</li><li>WebSockets</li><li>OpenAI SDK</li><li>Olostep</li></ul>
+          
         </div>
       </article>
     </div>
