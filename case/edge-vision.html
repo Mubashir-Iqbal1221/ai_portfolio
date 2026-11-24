@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VISTOS: Safety alerts on edge devices, and an agent to question them | Mubashir Iqbal</title>
-<meta name="description" content="Safety alerts for violence, falls and intrusions on an NVIDIA Jetson, with an agent that lets operators question the data by voice or text. 4 camera streams, stable at 2 fps each, in a benchmark on one test video.">
+<meta name="description" content="Safety alerts for violence, falls and intrusions on an NVIDIA Jetson, with an agent that lets operators question the data by voice or text. One DeepStream pipeline runs 4 cameras at 13.7 fps each.">
 <meta property="og:type" content="article">
 <meta property="og:title" content="VISTOS: Safety alerts on edge devices, and an agent to question them | Mubashir Iqbal">
-<meta property="og:description" content="Safety alerts for violence, falls and intrusions on an NVIDIA Jetson, with an agent that lets operators question the data by voice or text. 4 camera streams, stable at 2 fps each, in a benchmark on one test video.">
+<meta property="og:description" content="Safety alerts for violence, falls and intrusions on an NVIDIA Jetson, with an agent that lets operators question the data by voice or text. One DeepStream pipeline runs 4 cameras at 13.7 fps each.">
 <script>try{var m=localStorage.getItem("mode");if(m==="light"||m==="dark")document.documentElement.setAttribute("data-mode",m)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,15 +29,15 @@
 <main id="main" class="prose-wrap">
   <p class="post-meta">Case study · 2026</p>
   <h1>Safety alerts on edge devices, and an agent to question them</h1>
-  <p>A facility has many cameras and few people watching them. We delivered the first version of a system that watches camera feeds on an edge device, flags violence, falls and intrusions, and lets operators ask about any event in plain words, by voice or text.</p>
+  <p>A facility has many cameras and few people watching them. We delivered a system that watches camera feeds on an edge device, flags violence, falls and intrusions, and lets operators ask about any event in plain words, by voice or text. I also converted the vision pipeline to DeepStream and optimised it to run fully on the device.</p>
 
   <p><strong>At a glance</strong></p>
   <ul>
     <li><strong>Client:</strong> a secure facility</li>
-    <li><strong>Scope:</strong> first version, delivered and deployed</li>
-    <li><strong>My role:</strong> built the operator agent over the event database, configured the Jetson and its network access, and helped shape the vision pipeline's design</li>
-    <li><strong>Result:</strong> 4 camera streams, stable at 2 fps each, in a throughput benchmark on the Jetson</li>
-    <li><strong>Stack:</strong> NVIDIA Jetson, DeepStream, YOLOv8, Google ADK, Gemini, LiteLLM, MCP Toolbox, PostgreSQL, Tailscale, Docker</li>
+    <li><strong>Scope:</strong> first version delivered and deployed, with the vision pipeline moved from a cloud VM onto a Jetson</li>
+    <li><strong>My role:</strong> built the operator agent over the event database, set up the Jetson, and converted the vision pipeline to DeepStream and optimised it for the device, end to end</li>
+    <li><strong>Result:</strong> one pipeline runs 4 cameras at 13.7 fps each; app RAM down from 2.3 GiB to 0.57 GiB</li>
+    <li><strong>Stack:</strong> NVIDIA Jetson, DeepStream, TensorRT, YOLOv8, Google ADK, Gemini, LiteLLM, MCP Toolbox, PostgreSQL, Tailscale, Docker</li>
   </ul>
 
   <h2>The problem</h2>
@@ -46,18 +46,33 @@
   <h2>What we built</h2>
   <ul>
     <li><strong>A funnel from cheap checks to costly ones.</strong> Each camera is sampled down to a few frames per second. Quick checks catch camera tampering, frames with nobody in them stop at person detection, and pose and motion give each frame an anomaly score. Only high-scoring frames go to a vision-language model, so most frames never reach the costly step.</li>
-    <li><strong>Detection on the Jetson.</strong> We run YOLOv8 inside an NVIDIA DeepStream pipeline on the device. Each event saves a clip from 5 seconds before to 5 seconds after, as evidence.</li>
     <li><strong>An agent operators can question.</strong> I built the agent operators use to ask questions such as how many falls happened at a site this week. It answers by text or voice, draws charts, and writes an incident report for each event.</li>
     <li><strong>Open questions, without open access.</strong> Operators ask questions nobody can list in advance, so a fixed set of predefined queries would not cover them, and the agent writes its own SQL. To keep that safe without relying on the prompt, I created a database user with only the access we chose to expose, and the agent's database toolbox connects through that user alone. Row-level security then limits every query to the user's own organisation and sites.</li>
     <li><strong>Sessions that pick up where they left off.</strong> Conversations are saved, and a voice session resumes from a cleaned, trimmed history, so old audio and tool output cannot confuse the model.</li>
     <li><strong>The device, connected.</strong> I configured the Jetson, connected its services, and set up secure network access to it with Tailscale.</li>
   </ul>
 
+  <h2>The vision pipeline, in DeepStream on the device</h2>
+  <p>The vision pipeline first ran as Python code with PyTorch on a cloud VM. I converted it to DeepStream, moved it onto a Jetson Orin Nano, and optimised it for that device.</p>
+  <ul>
+    <li><strong>Both models on the device, without PyTorch.</strong> I moved the pose model to a TensorRT engine and wrote its keypoint decoder. PyTorch is no longer in the running app, and the image is 2.4 GB smaller.</li>
+    <li><strong>Matched to the original, not just faster.</strong> The first port found 174 of the 340 people the original model found. I traced it to black square padding and moved gray padding into the model file, which brought it to 325 of 340. For the detector, a rectangle input and one DeepStream setting for boxes at the frame edge gave a 100% match with Ultralytics.</li>
+    <li><strong>One pipeline for up to four cameras.</strong> I replaced one pipeline per camera with one shared pipeline. Cameras join and leave while it runs. The first RTSP camera crashed it, a fault that file tests had hidden; I found the cause and fixed it.</li>
+    <li><strong>Measured before keeping.</strong> I tested six ways to move work to the GPU, each behind a switch, with 1 and 4 cameras. I kept the three that saved CPU with the same detections: a smaller live picture, the tamper check on the GPU, and no drawing while nobody watches. Detection and events never stop.</li>
+    <li><strong>Clips that last, on a disk that does not fill.</strong> Event clips are MP4 files on the device's NVMe, served with signed links. Clips older than 7 days are deleted, and the oldest go first when the disk is over 80% full.</li>
+    <li><strong>A new Jetson in one command.</strong> Export scripts rebuild both models on any Jetson, and one setup script checks the device, builds everything and tests the install.</li>
+  </ul>
+
   <h2>Results</h2>
   <div class="tablewrap"><table class="d-table">
     <thead><tr><th scope="col">Metric</th><th scope="col">Result</th><th scope="col">How measured</th></tr></thead>
     <tbody>
-      <tr><th scope="row">Camera streams</th><td>4, stable at 2 fps each</td><td>Throughput benchmark on the Jetson, one test video</td></tr>
+      <tr><th scope="row">App RAM (peak)</th><td>2.3 GiB to 0.57 GiB</td><td>Same test video, one camera, original code against final build</td></tr>
+      <tr><th scope="row">Pose model RAM</th><td>1,710 MB to 427 MB</td><td>PyTorch against TensorRT engine</td></tr>
+      <tr><th scope="row">4 cameras</th><td>4.1 to 13.7 fps each, 1.6 to 1.0 GB</td><td>One pipeline per camera against one shared pipeline</td></tr>
+      <tr><th scope="row">Live video, 4 cameras</th><td>7.4 to 2.3 Mbit/s per viewer; CPU about 367% to 270% of one core</td><td>Same detections on every frame</td></tr>
+      <tr><th scope="row">Pose accuracy</th><td>325 of 340 people found by the original model</td><td>First port found 174</td></tr>
+      <tr><th scope="row">Detector accuracy</th><td>100% match with Ultralytics</td><td>Same test video</td></tr>
     </tbody>
   </table></div>
 
